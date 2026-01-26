@@ -1,10 +1,8 @@
 syntax = "proto3";
 
-package settlementone.execution.v1;
+option go_package = "github.com/Vix1209/settlementOne-proto/execution";
 
 import "google/protobuf/struct.proto";
-
-option go_package = "github.com/Vix1209/settlementOne-proto.git/gen/go/settlementone/execution/v1;executionv1";
 
 service ExecutionService {
   rpc Execute(ExecuteRequest) returns (ExecuteResponse);

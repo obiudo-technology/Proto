@@ -1,3 +1,3 @@
-module github.com/Vix1209/settlementOne-proto.git
+module github.com/Vix1209/settlementOne-proto
 
-go 1.24.4
+go 1.25.0
