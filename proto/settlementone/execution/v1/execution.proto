@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package settlementone.execution.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/Vix1209/settlementOne-proto.git/gen/go/settlementone/execution/v1;executionv1";
+
+service ExecutionService {
+  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+}
+
+enum ExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  EXECUTION_STATUS_SUCCEEDED = 1;
+  EXECUTION_STATUS_FAILED = 2;
+  EXECUTION_STATUS_REJECTED = 3;
+}
+
+enum ExecutionErrorCode {
+  EXECUTION_ERROR_CODE_UNSPECIFIED = 0;
+  EXECUTION_ERROR_CODE_VALIDATION = 1;
+  EXECUTION_ERROR_CODE_PROVIDER = 2;
+  EXECUTION_ERROR_CODE_TIMEOUT = 3;
+  EXECUTION_ERROR_CODE_INTERNAL = 4;
+}
+
+enum TransactionType {
+  TRANSACTION_TYPE_UNSPECIFIED = 0;
+  TRANSACTION_TYPE_CARD_CHARGE = 1;
+  TRANSACTION_TYPE_CARD_REFUND = 2;
+  TRANSACTION_TYPE_BANK_TRANSFER = 3;
+  TRANSACTION_TYPE_BANK_REVERSAL = 4;
+  TRANSACTION_TYPE_WALLET_DEBIT = 5;
+  TRANSACTION_TYPE_WALLET_CREDIT = 6;
+  TRANSACTION_TYPE_INTERNAL_TRANSFER = 7;
+  TRANSACTION_TYPE_SETTLEMENT_MOVE = 8;
+  TRANSACTION_TYPE_CLEARING_MOVE = 9;
+  TRANSACTION_TYPE_FEE_CHARGE = 10;
+  TRANSACTION_TYPE_FEE_REFUND = 11;
+  TRANSACTION_TYPE_CHARGEBACK = 12;
+  TRANSACTION_TYPE_DISPUTE_ADJUSTMENT = 13;
+}
+
+message ExecuteRequest {
+  string intent_id = 1;
+  string idempotency_key = 2;
+  TransactionType transaction_type = 3;
+  string currency = 4;
+  int64 amount = 5;
+  string source_account_id = 6;
+  string destination_account_id = 7;
+  google.protobuf.Struct attributes = 8;
+}
+
+message ExecutionError {
+  ExecutionErrorCode code = 1;
+  string message = 2;
+  string provider_code = 3;
+  google.protobuf.Struct details = 4;
+}
+
+message ExecuteResponse {
+  ExecutionStatus status = 1;
+  string processor_execution_id = 2;
+  string provider = 3;
+  string provider_reference = 4;
+  google.protobuf.Struct provider_metadata = 5;
+  ExecutionError error = 6;
+}
