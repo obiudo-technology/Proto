@@ -1,0 +1,299 @@
+sohere is the thing. i need clarity. you say the nest core will communicate with go processor via gRPC and there will be another repo between them, what will that repo have in particular. and how will the nest core be configured to grab information from there and send a request. and also how will the golang repo be configrued to grab communicate with whatever is in that repo to receive a request and send a response
+
+just give me a full understanding of the flow. in detiuals
+
+
+
+Absolutely — here’s the clear, complete explanation of the shared proto repo, how NestJS Core talks to the Go processor, and how Go talks back, with all the moving pieces and how they flow.
+
+I’ll keep it high-confidence, precise, and ready for implementation.
+
+📌 The Shared Proto Repository — What It Is and Why You Need It
+🔗 What it contains
+
+A shared repository (or package) that holds only:
+
+.proto files (Protocol Buffer definitions)
+
+Optionally:
+
+Versioning/manifests
+
+Code generation helpers (scripts)
+
+Generated client/server stubs (optional)
+
+Documentation of inter-service RPC contracts
+
+This repo does not contain:
+
+Business logic
+
+Service frameworks
+
+Application code
+
+It is a single source of truth for gRPC contracts.
+
+💡 This pattern is recommended and used in many teams — you keep all .proto definitions in one place so both producer and consumers use the same contract.
+
+🧠 Why You Need the Shared Proto Repo
+1. Strong contracts
+
+Proto files define:
+
+Services
+
+Requests
+
+Responses
+
+Errors
+
+Enums
+
+Both NestJS and Go generate code from this one definition.
+
+2. Language-agnostic
+
+You can generate:
+
+TypeScript types/clients
+
+Go types/servers
+
+Python clients
+
+Java clients
+… all from the same definitions.
+
+3. Versioning and compatibility
+
+If you change a message or a service:
+
+You bump versions in the proto repo
+
+Consumers update or pin specific versions
+
+You avoid diverging contracts
+
+This is normal practice.
+
+🏗️ Repository Structure (Recommended)
+settlementone-protos/
+├── proto/
+│   ├── execution/
+│   │   └── execution.proto
+│   └── common/
+│       └── types.proto
+├── scripts/
+│   └── generate.sh
+├── README.md
+└── go.mod / package.json (optional)
+
+
+proto/: actual definitions
+
+scripts/: automation for generation
+
+Only proto files live here
+
+🔄 How NestJS Core Uses It
+
+In your NestJS project:
+
+1. Import or reference the proto files
+
+You configure Nest gRPC like this:
+
+const app = await NestFactory.createMicroservice(AppModule, {
+  transport: Transport.GRPC,
+  options: {
+    package: 'execution',
+    protoPath: join(__dirname, '../settlementone-protos/proto/execution/execution.proto'),
+  },
+});
+
+
+NestJS will:
+
+Load the proto file
+
+Expose gRPC client/server based on it
+
+Generate types via TS codegen (e.g., using ts-proto)
+
+2. Invoke the Go processor via gRPC
+
+Your NestJS service will do something like:
+
+@Injectable()
+export class ExecutionGrpcClient {
+  private client: any;
+
+  onModuleInit() {
+    const grpcClient = this.client.getService<ExecutionService>('ExecutionService');
+    this.client = grpcClient;
+  }
+
+  async executeIntent(dto: ExecuteIntentDto) {
+    return this.client.execute({
+      intentId: dto.intentId,
+      payload: dto.payload,
+      idempotencyKey: dto.idempotencyKey,
+    });
+  }
+}
+
+
+NestJS uses the gRPC client generated from proto
+
+Calls the Go processor with the required fields
+
+Gets back a typed result
+
+🟢 How the Golang Processor Uses It
+Step 1 — Import the shared protos
+
+In settlementone-protos, you define:
+
+syntax = "proto3";
+
+package execution;
+
+message ExecuteRequest {
+  string intentId = 1;
+  string idempotencyKey = 2;
+  bytes payload = 3;
+}
+
+message ExecuteResponse {
+  string status = 1;
+  string providerReference = 2;
+}
+
+service ExecutionService {
+  rpc Execute (ExecuteRequest) returns (ExecuteResponse);
+}
+
+Step 2 — Generate Go stubs
+
+Use protoc:
+
+protoc \
+  --go_out=. \
+  --go-grpc_out=. \
+  proto/execution/execution.proto
+
+
+This creates:
+
+execution.pb.go (messages)
+
+execution_grpc.pb.go (services)
+
+Step 3 — Implement the server in Go
+type server struct {
+  pb.UnimplementedExecutionServiceServer
+}
+
+func (s *server) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.ExecuteResponse, error) {
+  // Business logic here
+  return &pb.ExecuteResponse{
+    Status: "SUCCESS",
+    ProviderReference: "prov_123",
+  }, nil
+}
+
+
+Start the gRPC server:
+
+grpcServer := grpc.NewServer()
+pb.RegisterExecutionServiceServer(grpcServer, &server{})
+
+
+Now your processor speaks gRPC.
+
+🔁 End-to-End Flow in Detail
+1. Core → Processor (gRPC request)
+
+NestJS receives an HTTP request to execute a payment
+
+Core validates and transitions intent to PROCESSING
+
+Core calls the Go processor via gRPC:
+
+Uses the generated TypeScript gRPC client
+
+Sends ExecuteRequest (intent, idempotency, payload)
+
+This is synchronous request/response.
+
+2. Processor → Core (gRPC response)
+
+Go processor processes the execution logic
+
+Normalizes provider results
+
+Returns ExecuteResponse with status
+
+NestJS core gets the result, updates:
+
+ExecutionAttempt
+
+Intent status
+
+Ledger entries
+
+Outbox events
+
+Webhooks
+
+3. Async Events / Webhook Normalization
+
+Your Go processor may also implement a webhook server:
+
+http.HandleFunc("/webhook/paystack", handler)
+
+
+Parses provider event
+
+Validates signatures
+
+Normalizes event
+
+Sends back to Core via another gRPC call or message queue
+
+📌 Why the Shared Repo Pattern Works (Industry validation)
+
+Shared .proto definitions reduce errors and duplicate code.
+
+Teams often separate .proto, generated code, and implementation per language.
+
+NestJS supports this pattern directly via protoPath.
+
+Summary — Full Flow (at a glance)
+┌───────────────────────┐
+│ settlementone-protos/ │
+│   (proto/execution.proto) │
+└───────────▲───────────┘
+            │
+    (shared contract)
+            │
+┌───────────┴──────────────────┐             ┌───────────────────┐
+│ SettlementOne Core (NestJS) │ <—— gRPC ——> │ Go Execution Processor |
+│ - Loads proto                │             │ - Loads proto       |
+│ - Generates TS types         │             │ - Generates Go types |
+│ - gRPC client                │             │ - gRPC server       |
+│ - Business logic/ledger      │             │ - Execution logic   |
+└──────────────────────────────┘             └─────────────────────┘
+
+🔥 Key Takeaways
+✔ The shared proto repo holds only contracts, not business code.
+
+This ensures consistency and type safety.
+
+✔ Both services generate code from the same proto.
+✔ NestJS uses protoPath and a client to call the Go processor.
+✔ Go imports the same proto definitions to implement the server.
+✔ This pattern is proven in real systems and scales cleanly.
