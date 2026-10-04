@@ -1,3 +1,3 @@
-module github.com/Vix1209/settlementOne-proto
+module github.com/settlement-one/Proto
 
 go 1.22
