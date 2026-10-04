@@ -1,0 +1,5 @@
+# Every file in this repository is owned by the repository owner.
+# GitHub automatically requests @Vix1209 as reviewer on every pull request,
+# and the main-branch ruleset ("Require review from Code Owners") makes that
+# approval mandatory before merge.
+*       @Vix1209
