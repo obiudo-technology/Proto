@@ -1,5 +1,0 @@
-services:
-  settlementone-proto:
-    build:
-      context: .
-    image: settlementone-proto:local

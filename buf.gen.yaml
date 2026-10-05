@@ -1,0 +1,17 @@
+# Code generation: `buf generate` (or `make generate`) writes the Go stubs
+# into gen/go/, which is committed so Go consumers can import it directly.
+#
+# The plugins run via `go tool`, pinned in go.mod, so the generator version
+# always matches the google.golang.org/protobuf runtime the code depends on.
+# Nothing has to be installed globally except buf itself.
+version: v2
+inputs:
+  - directory: proto
+clean: true
+plugins:
+  - local: ["go", "tool", "protoc-gen-go"]
+    out: gen/go
+    opt: paths=source_relative
+  - local: ["go", "tool", "protoc-gen-go-grpc"]
+    out: gen/go
+    opt: paths=source_relative

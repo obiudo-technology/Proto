@@ -2,19 +2,39 @@ syntax = "proto3";
 
 package settlementone.execution.v1;
 
-option go_package = "github.com/settlement-one/Proto/execution";
-
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/settlement-one/Proto/gen/go/settlementone/execution/v1;executionv1";
+
+// ExecutionService is hosted by settlementOne-processor and called by
+// settlementOne-core. Core decides and records; the processor executes a
+// money movement on a payment rail exactly once and reports the outcome.
 service ExecutionService {
+  // Execute runs one already-decided money movement. Calls are idempotent on
+  // idempotency_key: a repeat returns the stored result and never executes
+  // twice.
   rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+
+  // GetExecution returns what the processor knows about past executions, so
+  // Core can reconcile intents whose outcome it did not receive.
+  rpc GetExecution(GetExecutionRequest) returns (GetExecutionResponse);
 }
 
 enum ExecutionStatus {
   EXECUTION_STATUS_UNSPECIFIED = 0;
+  // The provider confirmed final success. Money moved.
   EXECUTION_STATUS_SUCCEEDED = 1;
+  // The provider definitively failed, or the payout was never sent. Money did
+  // not move; safe to retry with a new idempotency key.
   EXECUTION_STATUS_FAILED = 2;
+  // Refused before any provider was contacted (validation, unsupported
+  // route). Money did not move.
   EXECUTION_STATUS_REJECTED = 3;
+  // Sent, but the final outcome is not known yet (asynchronous rail, or a
+  // timeout after sending). Money may be moving: do NOT retry. The final
+  // status follows asynchronously, and GetExecution reports it.
+  EXECUTION_STATUS_PENDING = 4;
 }
 
 enum ExecutionErrorCode {
@@ -46,10 +66,14 @@ message ExecuteRequest {
   string intent_id = 1;
   string idempotency_key = 2;
   TransactionType transaction_type = 3;
+  // ISO-4217 currency code, e.g. "NGN".
   string currency = 4;
+  // Amount in minor units (e.g. kobo). Never a float.
   int64 amount = 5;
   string source_account_id = 6;
   string destination_account_id = 7;
+  // Rail-specific string attributes (e.g. bank code). Never money: Struct
+  // numbers are doubles.
   google.protobuf.Struct attributes = 8;
 }
 
@@ -67,4 +91,29 @@ message ExecuteResponse {
   string provider_reference = 4;
   google.protobuf.Struct provider_metadata = 5;
   ExecutionError error = 6;
+}
+
+message GetExecutionRequest {
+  // Exactly one lookup key must be set; neither is INVALID_ARGUMENT.
+  oneof lookup {
+    // Every execution of this intent. An intent can have several: a FAILED
+    // execution may be retried by Core under a new idempotency key.
+    string intent_id = 1;
+    // The single execution stored under this idempotency key, if any.
+    string idempotency_key = 2;
+  }
+}
+
+message GetExecutionResponse {
+  // Oldest first. Empty when the processor has no record of the lookup key.
+  repeated ExecutionRecord executions = 1;
+}
+
+message ExecutionRecord {
+  string idempotency_key = 1;
+  // The result as Execute returned it, or would return it now; for a PENDING
+  // execution that has since finished, this is the final result.
+  ExecuteResponse result = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
 }

@@ -1,0 +1,15 @@
+# buf configuration for the SettlementOne contract.
+# The .proto sources live under proto/; their directory layout must match
+# their package (settlementone.execution.v1 → proto/settlementone/execution/v1).
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+breaking:
+  # FILE is the strictest category: it protects generated code (Go, TS) as
+  # well as the wire format, so renames and moves are caught, not just
+  # changes that would corrupt bytes on the wire.
+  use:
+    - FILE
