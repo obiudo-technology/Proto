@@ -1,0 +1,59 @@
+# Contract CI. Both jobs are required status checks on main (see
+# .github/rulesets/main-branch.json), so nothing merges unless the contract
+# lints, is formatted, has no breaking changes, and the committed Go code
+# matches what the .proto files generate.
+#
+# Hardening: read-only token, every action pinned to a full commit SHA (a
+# moved tag upstream cannot change what runs here), no pull_request_target
+# (fork PRs never see secrets), and no push to the Buf Schema Registry.
+name: ci
+
+on:
+  pull_request:
+    # labeled/unlabeled re-run checks when the "buf skip breaking" label
+    # changes. That label is for deliberate, reviewed breaking changes only.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buf:
+    name: buf
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # On pull requests: build, lint, format and breaking (against the PR's
+      # base branch).
+      - uses: bufbuild/buf-action@85aebf73123b5c15fd5528aaecbf9129cddf7fa7 # v1.6.0
+        with:
+          version: 1.73.0
+          push: false
+          archive: false
+          pr_comment: false
+
+  generated:
+    name: generated-code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Same Docker toolchain and Makefile targets as local development, so
+      # "works on my machine" and "passes CI" are the same thing.
+      - name: Regenerate Go code
+        run: make generate
+      - name: Fail if committed code is stale
+        run: make verify-clean
+      - name: Build and vet
+        run: make build

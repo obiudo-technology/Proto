@@ -10,4 +10,3 @@ dist
 tmp
 
 Dockerfile
-docker-compose.yml
