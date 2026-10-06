@@ -1,6 +1,6 @@
-# buf configuration for the SettlementOne contract.
+# buf configuration for the Obiudo contract.
 # The .proto sources live under proto/; their directory layout must match
-# their package (settlementone.execution.v1 → proto/settlementone/execution/v1).
+# their package (obiudo.execution.v1 → proto/obiudo/execution/v1).
 version: v2
 modules:
   - path: proto

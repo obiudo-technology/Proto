@@ -1,4 +1,4 @@
-# Developer tasks for the SettlementOne contract.
+# Developer tasks for the Obiudo contract.
 #
 # Only Docker is required: every buf/Go command runs inside the toolchain
 # image built from ./Dockerfile (buf + Go + pinned generators). The image is
@@ -9,7 +9,7 @@
 #   make check      everything CI checks
 #   make shell      a shell inside the toolchain container
 
-TOOLS_IMAGE := settlementone-proto-tools:local
+TOOLS_IMAGE := obiudo-proto-tools:local
 
 # Runs as your host user (generated files stay yours, not root's), with the
 # repo mounted, and with no network: everything was pre-fetched into the image.

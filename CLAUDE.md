@@ -1,16 +1,16 @@
-# settlementOne-proto: Claude Working Rules
+# obiudo-proto: Claude Working Rules
 
 Always-loaded entrypoint for every task in this repo. It holds the rules that must never be broken, and it's kept short so it is never truncated.
 
-This repo is the **gRPC contract** between `settlementOne-core` (NestJS, the book of record) and `settlementOne-processor` (Go, moves money). Both services are built against it, so a careless change here can make them disagree about money. Treat every edit as a change to a published API: **additive, reviewed, released.**
+This repo is the **gRPC contract** between `obiudo-core` (NestJS, the book of record) and `obiudo-processor` (Go, moves money). Both services are built against it, so a careless change here can make them disagree about money. Treat every edit as a change to a published API: **additive, reviewed, released.**
 
 ---
 
 ## Read first
 
 - `README.md`: layout, `make` targets, release rules.
-- `proto/settlementone/execution/v1/execution.proto`: the contract itself.
-- How the consumers use it: the processor's `docs/SettlementOneProcessorEngineering.md` §3 (`../processor`), and Core's `src/app/processor/` (`../core`).
+- `proto/obiudo/execution/v1/execution.proto`: the contract itself.
+- How the consumers use it: the processor's `docs/ObiudoProcessorEngineering.md` §3 (`../processor`), and Core's `src/app/processor/` (`../core`).
 
 ---
 
@@ -20,7 +20,7 @@ This repo is the **gRPC contract** between `settlementOne-core` (NestJS, the boo
 2. Edit the `.proto`, then `make format` → `make generate` → `make check`. Every command runs in the Docker toolchain, so only Docker is required.
 3. Commit the `.proto` change **and** the regenerated `gen/` (plus `go.mod`/`go.sum` if changed) **in the same commit.**
 4. Releasing is the owner's job. Never create, move, delete or push tags: give the owner the exact command (`git tag vX.Y.Z && git push origin vX.Y.Z`) to run from an up-to-date `main`.
-5. After a release, consumers upgrade in their own repos: the processor runs `go get github.com/settlement-one/Proto@vX.Y.Z`, and Core changes its `package.json` `#vX.Y.Z`. If the semantics changed, update the processor engineering doc §3 in the same piece of work.
+5. After a release, consumers upgrade in their own repos: the processor runs `go get github.com/obiudo-technology/Proto@vX.Y.Z`, and Core changes its `package.json` `#vX.Y.Z`. If the semantics changed, update the processor engineering doc §3 in the same piece of work.
 
 ---
 
@@ -43,7 +43,7 @@ This repo is the **gRPC contract** between `settlementOne-core` (NestJS, the boo
 
 ### Naming and style (enforced by `buf lint` STANDARD)
 - Enum zero value is `<ENUM>_UNSPECIFIED = 0`, and values are prefixed with the enum name. RPCs use `<Rpc>Request`/`<Rpc>Response`.
-- Package `settlementone.<area>.v<N>` lives in `proto/settlementone/<area>/v<N>/`. A truly breaking redesign is a new `v<N+1>` package alongside the old one, never an edit.
+- Package `obiudo.<area>.v<N>` lives in `proto/obiudo/<area>/v<N>/`. A truly breaking redesign is a new `v<N+1>` package alongside the old one, never an edit.
 
 ### Tooling is pinned, and changes together
 - Never install or upgrade buf or the generators ad hoc.

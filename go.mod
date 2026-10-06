@@ -1,4 +1,4 @@
-module github.com/settlement-one/Proto
+module github.com/obiudo-technology/Proto
 
 go 1.26
 

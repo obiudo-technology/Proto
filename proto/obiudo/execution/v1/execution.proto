@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package settlementone.execution.v1;
+package obiudo.execution.v1;
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/settlement-one/Proto/gen/go/settlementone/execution/v1;executionv1";
+option go_package = "github.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1;executionv1";
 
-// ExecutionService is hosted by settlementOne-processor and called by
-// settlementOne-core. Core decides and records; the processor executes a
+// ExecutionService is hosted by obiudo-processor and called by
+// obiudo-core. Core decides and records; the processor executes a
 // money movement on a payment rail exactly once and reports the outcome.
 service ExecutionService {
   // Execute runs one already-decided money movement. Calls are idempotent on
