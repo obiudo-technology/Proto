@@ -1,10 +1,10 @@
-# SettlementOne Proto
+# Obiudo Proto
 
-The gRPC contract between `settlementOne-core` (NestJS) and `settlementOne-processor` (Go).
+The gRPC contract between `obiudo-core` (NestJS) and `obiudo-processor` (Go).
 
-- **Source:** `proto/settlementone/execution/v1/execution.proto`
-- **Go:** generated into `gen/go/` and committed. Import `github.com/settlement-one/Proto/gen/go/settlementone/execution/v1` (package `executionv1`).
-- **TypeScript (Core):** loads the `.proto` at runtime. Install with `"settlementone-proto": "github:settlement-one/Proto#<tag>"`.
+- **Source:** `proto/obiudo/execution/v1/execution.proto`
+- **Go:** generated into `gen/go/` and committed. Import `github.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1` (package `executionv1`).
+- **TypeScript (Core):** loads the `.proto` at runtime. Install with `"obiudo-proto": "github:obiudo-technology/Proto#<tag>"`.
 
 ## Working on the contract
 

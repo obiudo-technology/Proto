@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: settlementone/execution/v1/execution.proto
+// source: obiudo/execution/v1/execution.proto
 
 package executionv1
 
@@ -70,11 +70,11 @@ func (x ExecutionStatus) String() string {
 }
 
 func (ExecutionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_settlementone_execution_v1_execution_proto_enumTypes[0].Descriptor()
+	return file_obiudo_execution_v1_execution_proto_enumTypes[0].Descriptor()
 }
 
 func (ExecutionStatus) Type() protoreflect.EnumType {
-	return &file_settlementone_execution_v1_execution_proto_enumTypes[0]
+	return &file_obiudo_execution_v1_execution_proto_enumTypes[0]
 }
 
 func (x ExecutionStatus) Number() protoreflect.EnumNumber {
@@ -83,7 +83,7 @@ func (x ExecutionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionStatus.Descriptor instead.
 func (ExecutionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{0}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{0}
 }
 
 type ExecutionErrorCode int32
@@ -125,11 +125,11 @@ func (x ExecutionErrorCode) String() string {
 }
 
 func (ExecutionErrorCode) Descriptor() protoreflect.EnumDescriptor {
-	return file_settlementone_execution_v1_execution_proto_enumTypes[1].Descriptor()
+	return file_obiudo_execution_v1_execution_proto_enumTypes[1].Descriptor()
 }
 
 func (ExecutionErrorCode) Type() protoreflect.EnumType {
-	return &file_settlementone_execution_v1_execution_proto_enumTypes[1]
+	return &file_obiudo_execution_v1_execution_proto_enumTypes[1]
 }
 
 func (x ExecutionErrorCode) Number() protoreflect.EnumNumber {
@@ -138,7 +138,7 @@ func (x ExecutionErrorCode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionErrorCode.Descriptor instead.
 func (ExecutionErrorCode) EnumDescriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{1}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{1}
 }
 
 type TransactionType int32
@@ -207,11 +207,11 @@ func (x TransactionType) String() string {
 }
 
 func (TransactionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_settlementone_execution_v1_execution_proto_enumTypes[2].Descriptor()
+	return file_obiudo_execution_v1_execution_proto_enumTypes[2].Descriptor()
 }
 
 func (TransactionType) Type() protoreflect.EnumType {
-	return &file_settlementone_execution_v1_execution_proto_enumTypes[2]
+	return &file_obiudo_execution_v1_execution_proto_enumTypes[2]
 }
 
 func (x TransactionType) Number() protoreflect.EnumNumber {
@@ -220,14 +220,14 @@ func (x TransactionType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TransactionType.Descriptor instead.
 func (TransactionType) EnumDescriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{2}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{2}
 }
 
 type ExecuteRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	IntentId        string                 `protobuf:"bytes,1,opt,name=intent_id,json=intentId,proto3" json:"intent_id,omitempty"`
 	IdempotencyKey  string                 `protobuf:"bytes,2,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
-	TransactionType TransactionType        `protobuf:"varint,3,opt,name=transaction_type,json=transactionType,proto3,enum=settlementone.execution.v1.TransactionType" json:"transaction_type,omitempty"`
+	TransactionType TransactionType        `protobuf:"varint,3,opt,name=transaction_type,json=transactionType,proto3,enum=obiudo.execution.v1.TransactionType" json:"transaction_type,omitempty"`
 	// ISO-4217 currency code, e.g. "NGN".
 	Currency string `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
 	// Amount in minor units (e.g. kobo). Never a float.
@@ -243,7 +243,7 @@ type ExecuteRequest struct {
 
 func (x *ExecuteRequest) Reset() {
 	*x = ExecuteRequest{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[0]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -255,7 +255,7 @@ func (x *ExecuteRequest) String() string {
 func (*ExecuteRequest) ProtoMessage() {}
 
 func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[0]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -268,7 +268,7 @@ func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteRequest.ProtoReflect.Descriptor instead.
 func (*ExecuteRequest) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{0}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ExecuteRequest) GetIntentId() string {
@@ -329,7 +329,7 @@ func (x *ExecuteRequest) GetAttributes() *structpb.Struct {
 
 type ExecutionError struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ExecutionErrorCode     `protobuf:"varint,1,opt,name=code,proto3,enum=settlementone.execution.v1.ExecutionErrorCode" json:"code,omitempty"`
+	Code          ExecutionErrorCode     `protobuf:"varint,1,opt,name=code,proto3,enum=obiudo.execution.v1.ExecutionErrorCode" json:"code,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	ProviderCode  string                 `protobuf:"bytes,3,opt,name=provider_code,json=providerCode,proto3" json:"provider_code,omitempty"`
 	Details       *structpb.Struct       `protobuf:"bytes,4,opt,name=details,proto3" json:"details,omitempty"`
@@ -339,7 +339,7 @@ type ExecutionError struct {
 
 func (x *ExecutionError) Reset() {
 	*x = ExecutionError{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[1]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +351,7 @@ func (x *ExecutionError) String() string {
 func (*ExecutionError) ProtoMessage() {}
 
 func (x *ExecutionError) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[1]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,7 +364,7 @@ func (x *ExecutionError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutionError.ProtoReflect.Descriptor instead.
 func (*ExecutionError) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{1}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ExecutionError) GetCode() ExecutionErrorCode {
@@ -397,7 +397,7 @@ func (x *ExecutionError) GetDetails() *structpb.Struct {
 
 type ExecuteResponse struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
-	Status               ExecutionStatus        `protobuf:"varint,1,opt,name=status,proto3,enum=settlementone.execution.v1.ExecutionStatus" json:"status,omitempty"`
+	Status               ExecutionStatus        `protobuf:"varint,1,opt,name=status,proto3,enum=obiudo.execution.v1.ExecutionStatus" json:"status,omitempty"`
 	ProcessorExecutionId string                 `protobuf:"bytes,2,opt,name=processor_execution_id,json=processorExecutionId,proto3" json:"processor_execution_id,omitempty"`
 	Provider             string                 `protobuf:"bytes,3,opt,name=provider,proto3" json:"provider,omitempty"`
 	ProviderReference    string                 `protobuf:"bytes,4,opt,name=provider_reference,json=providerReference,proto3" json:"provider_reference,omitempty"`
@@ -409,7 +409,7 @@ type ExecuteResponse struct {
 
 func (x *ExecuteResponse) Reset() {
 	*x = ExecuteResponse{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[2]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -421,7 +421,7 @@ func (x *ExecuteResponse) String() string {
 func (*ExecuteResponse) ProtoMessage() {}
 
 func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[2]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -434,7 +434,7 @@ func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteResponse) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{2}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ExecuteResponse) GetStatus() ExecutionStatus {
@@ -494,7 +494,7 @@ type GetExecutionRequest struct {
 
 func (x *GetExecutionRequest) Reset() {
 	*x = GetExecutionRequest{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[3]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -506,7 +506,7 @@ func (x *GetExecutionRequest) String() string {
 func (*GetExecutionRequest) ProtoMessage() {}
 
 func (x *GetExecutionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[3]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -519,7 +519,7 @@ func (x *GetExecutionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExecutionRequest.ProtoReflect.Descriptor instead.
 func (*GetExecutionRequest) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{3}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetExecutionRequest) GetLookup() isGetExecutionRequest_Lookup {
@@ -576,7 +576,7 @@ type GetExecutionResponse struct {
 
 func (x *GetExecutionResponse) Reset() {
 	*x = GetExecutionResponse{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[4]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -588,7 +588,7 @@ func (x *GetExecutionResponse) String() string {
 func (*GetExecutionResponse) ProtoMessage() {}
 
 func (x *GetExecutionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[4]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -601,7 +601,7 @@ func (x *GetExecutionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExecutionResponse.ProtoReflect.Descriptor instead.
 func (*GetExecutionResponse) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{4}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetExecutionResponse) GetExecutions() []*ExecutionRecord {
@@ -625,7 +625,7 @@ type ExecutionRecord struct {
 
 func (x *ExecutionRecord) Reset() {
 	*x = ExecutionRecord{}
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[5]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -637,7 +637,7 @@ func (x *ExecutionRecord) String() string {
 func (*ExecutionRecord) ProtoMessage() {}
 
 func (x *ExecutionRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_settlementone_execution_v1_execution_proto_msgTypes[5]
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -650,7 +650,7 @@ func (x *ExecutionRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutionRecord.ProtoReflect.Descriptor instead.
 func (*ExecutionRecord) Descriptor() ([]byte, []int) {
-	return file_settlementone_execution_v1_execution_proto_rawDescGZIP(), []int{5}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ExecutionRecord) GetIdempotencyKey() string {
@@ -681,45 +681,45 @@ func (x *ExecutionRecord) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-var File_settlementone_execution_v1_execution_proto protoreflect.FileDescriptor
+var File_obiudo_execution_v1_execution_proto protoreflect.FileDescriptor
 
-const file_settlementone_execution_v1_execution_proto_rawDesc = "" +
+const file_obiudo_execution_v1_execution_proto_rawDesc = "" +
 	"\n" +
-	"*settlementone/execution/v1/execution.proto\x12\x1asettlementone.execution.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfd\x02\n" +
+	"#obiudo/execution/v1/execution.proto\x12\x13obiudo.execution.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf6\x02\n" +
 	"\x0eExecuteRequest\x12\x1b\n" +
 	"\tintent_id\x18\x01 \x01(\tR\bintentId\x12'\n" +
-	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\x12V\n" +
-	"\x10transaction_type\x18\x03 \x01(\x0e2+.settlementone.execution.v1.TransactionTypeR\x0ftransactionType\x12\x1a\n" +
+	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\x12O\n" +
+	"\x10transaction_type\x18\x03 \x01(\x0e2$.obiudo.execution.v1.TransactionTypeR\x0ftransactionType\x12\x1a\n" +
 	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12\x16\n" +
 	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12*\n" +
 	"\x11source_account_id\x18\x06 \x01(\tR\x0fsourceAccountId\x124\n" +
 	"\x16destination_account_id\x18\a \x01(\tR\x14destinationAccountId\x127\n" +
 	"\n" +
 	"attributes\x18\b \x01(\v2\x17.google.protobuf.StructR\n" +
-	"attributes\"\xc6\x01\n" +
-	"\x0eExecutionError\x12B\n" +
-	"\x04code\x18\x01 \x01(\x0e2..settlementone.execution.v1.ExecutionErrorCodeR\x04code\x12\x18\n" +
+	"attributes\"\xbf\x01\n" +
+	"\x0eExecutionError\x12;\n" +
+	"\x04code\x18\x01 \x01(\x0e2'.obiudo.execution.v1.ExecutionErrorCodeR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12#\n" +
 	"\rprovider_code\x18\x03 \x01(\tR\fproviderCode\x121\n" +
-	"\adetails\x18\x04 \x01(\v2\x17.google.protobuf.StructR\adetails\"\xdf\x02\n" +
-	"\x0fExecuteResponse\x12C\n" +
-	"\x06status\x18\x01 \x01(\x0e2+.settlementone.execution.v1.ExecutionStatusR\x06status\x124\n" +
+	"\adetails\x18\x04 \x01(\v2\x17.google.protobuf.StructR\adetails\"\xd1\x02\n" +
+	"\x0fExecuteResponse\x12<\n" +
+	"\x06status\x18\x01 \x01(\x0e2$.obiudo.execution.v1.ExecutionStatusR\x06status\x124\n" +
 	"\x16processor_execution_id\x18\x02 \x01(\tR\x14processorExecutionId\x12\x1a\n" +
 	"\bprovider\x18\x03 \x01(\tR\bprovider\x12-\n" +
 	"\x12provider_reference\x18\x04 \x01(\tR\x11providerReference\x12D\n" +
-	"\x11provider_metadata\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x10providerMetadata\x12@\n" +
-	"\x05error\x18\x06 \x01(\v2*.settlementone.execution.v1.ExecutionErrorR\x05error\"i\n" +
+	"\x11provider_metadata\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x10providerMetadata\x129\n" +
+	"\x05error\x18\x06 \x01(\v2#.obiudo.execution.v1.ExecutionErrorR\x05error\"i\n" +
 	"\x13GetExecutionRequest\x12\x1d\n" +
 	"\tintent_id\x18\x01 \x01(\tH\x00R\bintentId\x12)\n" +
 	"\x0fidempotency_key\x18\x02 \x01(\tH\x00R\x0eidempotencyKeyB\b\n" +
-	"\x06lookup\"c\n" +
-	"\x14GetExecutionResponse\x12K\n" +
+	"\x06lookup\"\\\n" +
+	"\x14GetExecutionResponse\x12D\n" +
 	"\n" +
-	"executions\x18\x01 \x03(\v2+.settlementone.execution.v1.ExecutionRecordR\n" +
-	"executions\"\xf5\x01\n" +
+	"executions\x18\x01 \x03(\v2$.obiudo.execution.v1.ExecutionRecordR\n" +
+	"executions\"\xee\x01\n" +
 	"\x0fExecutionRecord\x12'\n" +
-	"\x0fidempotency_key\x18\x01 \x01(\tR\x0eidempotencyKey\x12C\n" +
-	"\x06result\x18\x02 \x01(\v2+.settlementone.execution.v1.ExecuteResponseR\x06result\x129\n" +
+	"\x0fidempotency_key\x18\x01 \x01(\tR\x0eidempotencyKey\x12<\n" +
+	"\x06result\x18\x02 \x01(\v2$.obiudo.execution.v1.ExecuteResponseR\x06result\x129\n" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -751,54 +751,54 @@ const file_settlementone_execution_v1_execution_proto_rawDesc = "" +
 	"\x12\x1f\n" +
 	"\x1bTRANSACTION_TYPE_FEE_REFUND\x10\v\x12\x1f\n" +
 	"\x1bTRANSACTION_TYPE_CHARGEBACK\x10\f\x12'\n" +
-	"#TRANSACTION_TYPE_DISPUTE_ADJUSTMENT\x10\r2\xe9\x01\n" +
-	"\x10ExecutionService\x12b\n" +
-	"\aExecute\x12*.settlementone.execution.v1.ExecuteRequest\x1a+.settlementone.execution.v1.ExecuteResponse\x12q\n" +
-	"\fGetExecution\x12/.settlementone.execution.v1.GetExecutionRequest\x1a0.settlementone.execution.v1.GetExecutionResponseBOZMgithub.com/settlement-one/Proto/gen/go/settlementone/execution/v1;executionv1b\x06proto3"
+	"#TRANSACTION_TYPE_DISPUTE_ADJUSTMENT\x10\r2\xcd\x01\n" +
+	"\x10ExecutionService\x12T\n" +
+	"\aExecute\x12#.obiudo.execution.v1.ExecuteRequest\x1a$.obiudo.execution.v1.ExecuteResponse\x12c\n" +
+	"\fGetExecution\x12(.obiudo.execution.v1.GetExecutionRequest\x1a).obiudo.execution.v1.GetExecutionResponseBKZIgithub.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1;executionv1b\x06proto3"
 
 var (
-	file_settlementone_execution_v1_execution_proto_rawDescOnce sync.Once
-	file_settlementone_execution_v1_execution_proto_rawDescData []byte
+	file_obiudo_execution_v1_execution_proto_rawDescOnce sync.Once
+	file_obiudo_execution_v1_execution_proto_rawDescData []byte
 )
 
-func file_settlementone_execution_v1_execution_proto_rawDescGZIP() []byte {
-	file_settlementone_execution_v1_execution_proto_rawDescOnce.Do(func() {
-		file_settlementone_execution_v1_execution_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_settlementone_execution_v1_execution_proto_rawDesc), len(file_settlementone_execution_v1_execution_proto_rawDesc)))
+func file_obiudo_execution_v1_execution_proto_rawDescGZIP() []byte {
+	file_obiudo_execution_v1_execution_proto_rawDescOnce.Do(func() {
+		file_obiudo_execution_v1_execution_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_obiudo_execution_v1_execution_proto_rawDesc), len(file_obiudo_execution_v1_execution_proto_rawDesc)))
 	})
-	return file_settlementone_execution_v1_execution_proto_rawDescData
+	return file_obiudo_execution_v1_execution_proto_rawDescData
 }
 
-var file_settlementone_execution_v1_execution_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_settlementone_execution_v1_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_settlementone_execution_v1_execution_proto_goTypes = []any{
-	(ExecutionStatus)(0),          // 0: settlementone.execution.v1.ExecutionStatus
-	(ExecutionErrorCode)(0),       // 1: settlementone.execution.v1.ExecutionErrorCode
-	(TransactionType)(0),          // 2: settlementone.execution.v1.TransactionType
-	(*ExecuteRequest)(nil),        // 3: settlementone.execution.v1.ExecuteRequest
-	(*ExecutionError)(nil),        // 4: settlementone.execution.v1.ExecutionError
-	(*ExecuteResponse)(nil),       // 5: settlementone.execution.v1.ExecuteResponse
-	(*GetExecutionRequest)(nil),   // 6: settlementone.execution.v1.GetExecutionRequest
-	(*GetExecutionResponse)(nil),  // 7: settlementone.execution.v1.GetExecutionResponse
-	(*ExecutionRecord)(nil),       // 8: settlementone.execution.v1.ExecutionRecord
+var file_obiudo_execution_v1_execution_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_obiudo_execution_v1_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_obiudo_execution_v1_execution_proto_goTypes = []any{
+	(ExecutionStatus)(0),          // 0: obiudo.execution.v1.ExecutionStatus
+	(ExecutionErrorCode)(0),       // 1: obiudo.execution.v1.ExecutionErrorCode
+	(TransactionType)(0),          // 2: obiudo.execution.v1.TransactionType
+	(*ExecuteRequest)(nil),        // 3: obiudo.execution.v1.ExecuteRequest
+	(*ExecutionError)(nil),        // 4: obiudo.execution.v1.ExecutionError
+	(*ExecuteResponse)(nil),       // 5: obiudo.execution.v1.ExecuteResponse
+	(*GetExecutionRequest)(nil),   // 6: obiudo.execution.v1.GetExecutionRequest
+	(*GetExecutionResponse)(nil),  // 7: obiudo.execution.v1.GetExecutionResponse
+	(*ExecutionRecord)(nil),       // 8: obiudo.execution.v1.ExecutionRecord
 	(*structpb.Struct)(nil),       // 9: google.protobuf.Struct
 	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
 }
-var file_settlementone_execution_v1_execution_proto_depIdxs = []int32{
-	2,  // 0: settlementone.execution.v1.ExecuteRequest.transaction_type:type_name -> settlementone.execution.v1.TransactionType
-	9,  // 1: settlementone.execution.v1.ExecuteRequest.attributes:type_name -> google.protobuf.Struct
-	1,  // 2: settlementone.execution.v1.ExecutionError.code:type_name -> settlementone.execution.v1.ExecutionErrorCode
-	9,  // 3: settlementone.execution.v1.ExecutionError.details:type_name -> google.protobuf.Struct
-	0,  // 4: settlementone.execution.v1.ExecuteResponse.status:type_name -> settlementone.execution.v1.ExecutionStatus
-	9,  // 5: settlementone.execution.v1.ExecuteResponse.provider_metadata:type_name -> google.protobuf.Struct
-	4,  // 6: settlementone.execution.v1.ExecuteResponse.error:type_name -> settlementone.execution.v1.ExecutionError
-	8,  // 7: settlementone.execution.v1.GetExecutionResponse.executions:type_name -> settlementone.execution.v1.ExecutionRecord
-	5,  // 8: settlementone.execution.v1.ExecutionRecord.result:type_name -> settlementone.execution.v1.ExecuteResponse
-	10, // 9: settlementone.execution.v1.ExecutionRecord.created_at:type_name -> google.protobuf.Timestamp
-	10, // 10: settlementone.execution.v1.ExecutionRecord.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 11: settlementone.execution.v1.ExecutionService.Execute:input_type -> settlementone.execution.v1.ExecuteRequest
-	6,  // 12: settlementone.execution.v1.ExecutionService.GetExecution:input_type -> settlementone.execution.v1.GetExecutionRequest
-	5,  // 13: settlementone.execution.v1.ExecutionService.Execute:output_type -> settlementone.execution.v1.ExecuteResponse
-	7,  // 14: settlementone.execution.v1.ExecutionService.GetExecution:output_type -> settlementone.execution.v1.GetExecutionResponse
+var file_obiudo_execution_v1_execution_proto_depIdxs = []int32{
+	2,  // 0: obiudo.execution.v1.ExecuteRequest.transaction_type:type_name -> obiudo.execution.v1.TransactionType
+	9,  // 1: obiudo.execution.v1.ExecuteRequest.attributes:type_name -> google.protobuf.Struct
+	1,  // 2: obiudo.execution.v1.ExecutionError.code:type_name -> obiudo.execution.v1.ExecutionErrorCode
+	9,  // 3: obiudo.execution.v1.ExecutionError.details:type_name -> google.protobuf.Struct
+	0,  // 4: obiudo.execution.v1.ExecuteResponse.status:type_name -> obiudo.execution.v1.ExecutionStatus
+	9,  // 5: obiudo.execution.v1.ExecuteResponse.provider_metadata:type_name -> google.protobuf.Struct
+	4,  // 6: obiudo.execution.v1.ExecuteResponse.error:type_name -> obiudo.execution.v1.ExecutionError
+	8,  // 7: obiudo.execution.v1.GetExecutionResponse.executions:type_name -> obiudo.execution.v1.ExecutionRecord
+	5,  // 8: obiudo.execution.v1.ExecutionRecord.result:type_name -> obiudo.execution.v1.ExecuteResponse
+	10, // 9: obiudo.execution.v1.ExecutionRecord.created_at:type_name -> google.protobuf.Timestamp
+	10, // 10: obiudo.execution.v1.ExecutionRecord.updated_at:type_name -> google.protobuf.Timestamp
+	3,  // 11: obiudo.execution.v1.ExecutionService.Execute:input_type -> obiudo.execution.v1.ExecuteRequest
+	6,  // 12: obiudo.execution.v1.ExecutionService.GetExecution:input_type -> obiudo.execution.v1.GetExecutionRequest
+	5,  // 13: obiudo.execution.v1.ExecutionService.Execute:output_type -> obiudo.execution.v1.ExecuteResponse
+	7,  // 14: obiudo.execution.v1.ExecutionService.GetExecution:output_type -> obiudo.execution.v1.GetExecutionResponse
 	13, // [13:15] is the sub-list for method output_type
 	11, // [11:13] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
@@ -806,12 +806,12 @@ var file_settlementone_execution_v1_execution_proto_depIdxs = []int32{
 	0,  // [0:11] is the sub-list for field type_name
 }
 
-func init() { file_settlementone_execution_v1_execution_proto_init() }
-func file_settlementone_execution_v1_execution_proto_init() {
-	if File_settlementone_execution_v1_execution_proto != nil {
+func init() { file_obiudo_execution_v1_execution_proto_init() }
+func file_obiudo_execution_v1_execution_proto_init() {
+	if File_obiudo_execution_v1_execution_proto != nil {
 		return
 	}
-	file_settlementone_execution_v1_execution_proto_msgTypes[3].OneofWrappers = []any{
+	file_obiudo_execution_v1_execution_proto_msgTypes[3].OneofWrappers = []any{
 		(*GetExecutionRequest_IntentId)(nil),
 		(*GetExecutionRequest_IdempotencyKey)(nil),
 	}
@@ -819,18 +819,18 @@ func file_settlementone_execution_v1_execution_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_settlementone_execution_v1_execution_proto_rawDesc), len(file_settlementone_execution_v1_execution_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_obiudo_execution_v1_execution_proto_rawDesc), len(file_obiudo_execution_v1_execution_proto_rawDesc)),
 			NumEnums:      3,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_settlementone_execution_v1_execution_proto_goTypes,
-		DependencyIndexes: file_settlementone_execution_v1_execution_proto_depIdxs,
-		EnumInfos:         file_settlementone_execution_v1_execution_proto_enumTypes,
-		MessageInfos:      file_settlementone_execution_v1_execution_proto_msgTypes,
+		GoTypes:           file_obiudo_execution_v1_execution_proto_goTypes,
+		DependencyIndexes: file_obiudo_execution_v1_execution_proto_depIdxs,
+		EnumInfos:         file_obiudo_execution_v1_execution_proto_enumTypes,
+		MessageInfos:      file_obiudo_execution_v1_execution_proto_msgTypes,
 	}.Build()
-	File_settlementone_execution_v1_execution_proto = out.File
-	file_settlementone_execution_v1_execution_proto_goTypes = nil
-	file_settlementone_execution_v1_execution_proto_depIdxs = nil
+	File_obiudo_execution_v1_execution_proto = out.File
+	file_obiudo_execution_v1_execution_proto_goTypes = nil
+	file_obiudo_execution_v1_execution_proto_depIdxs = nil
 }

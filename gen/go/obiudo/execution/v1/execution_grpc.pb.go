@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: settlementone/execution/v1/execution.proto
+// source: obiudo/execution/v1/execution.proto
 
 package executionv1
 
@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExecutionService_Execute_FullMethodName      = "/settlementone.execution.v1.ExecutionService/Execute"
-	ExecutionService_GetExecution_FullMethodName = "/settlementone.execution.v1.ExecutionService/GetExecution"
+	ExecutionService_Execute_FullMethodName      = "/obiudo.execution.v1.ExecutionService/Execute"
+	ExecutionService_GetExecution_FullMethodName = "/obiudo.execution.v1.ExecutionService/GetExecution"
 )
 
 // ExecutionServiceClient is the client API for ExecutionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// ExecutionService is hosted by settlementOne-processor and called by
-// settlementOne-core. Core decides and records; the processor executes a
+// ExecutionService is hosted by obiudo-processor and called by
+// obiudo-core. Core decides and records; the processor executes a
 // money movement on a payment rail exactly once and reports the outcome.
 type ExecutionServiceClient interface {
 	// Execute runs one already-decided money movement. Calls are idempotent on
@@ -72,8 +72,8 @@ func (c *executionServiceClient) GetExecution(ctx context.Context, in *GetExecut
 // All implementations must embed UnimplementedExecutionServiceServer
 // for forward compatibility.
 //
-// ExecutionService is hosted by settlementOne-processor and called by
-// settlementOne-core. Core decides and records; the processor executes a
+// ExecutionService is hosted by obiudo-processor and called by
+// obiudo-core. Core decides and records; the processor executes a
 // money movement on a payment rail exactly once and reports the outcome.
 type ExecutionServiceServer interface {
 	// Execute runs one already-decided money movement. Calls are idempotent on
@@ -160,7 +160,7 @@ func _ExecutionService_GetExecution_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExecutionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "settlementone.execution.v1.ExecutionService",
+	ServiceName: "obiudo.execution.v1.ExecutionService",
 	HandlerType: (*ExecutionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -173,5 +173,5 @@ var ExecutionService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "settlementone/execution/v1/execution.proto",
+	Metadata: "obiudo/execution/v1/execution.proto",
 }

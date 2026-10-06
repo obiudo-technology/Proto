@@ -1,8 +1,8 @@
 {
-  "name": "settlementone-proto",
-  "version": "0.2.0",
+  "name": "obiudo-proto",
+  "version": "0.3.0",
   "private": true,
-  "description": "Shared protobuf contracts for the settlementOne system",
+  "description": "Shared protobuf contracts for the Obiudo system",
   "files": [
     "proto"
   ]
