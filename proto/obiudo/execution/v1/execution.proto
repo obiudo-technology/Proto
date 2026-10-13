@@ -19,6 +19,13 @@ service ExecutionService {
   // GetExecution returns what the processor knows about past executions, so
   // Core can reconcile intents whose outcome it did not receive.
   rpc GetExecution(GetExecutionRequest) returns (GetExecutionResponse);
+
+  // GetQuote prices ONE leg on ONE rail (or on the rail the processor picks
+  // when adapter is "AUTO"). It moves no money and is safe to retry; every
+  // call issues a new quote_id. Core composes the legs it receives into its
+  // own composite quote: the composite contract lives in Core, never here.
+  // The returned quote_id is what ExecuteRequest.quote_id refers to.
+  rpc GetQuote(GetQuoteRequest) returns (GetQuoteResponse);
 }
 
 enum ExecutionStatus {
@@ -43,6 +50,20 @@ enum ExecutionErrorCode {
   EXECUTION_ERROR_CODE_PROVIDER = 2;
   EXECUTION_ERROR_CODE_TIMEOUT = 3;
   EXECUTION_ERROR_CODE_INTERNAL = 4;
+  // The quote_id on an Execute has expired. Nothing was sent and money did not
+  // move: Core should request a fresh quote (or refund), not retry as is.
+  EXECUTION_ERROR_CODE_QUOTE_EXPIRED = 5;
+}
+
+// AmountSide says which side of a quote GetQuoteRequest.amount_minor fixes.
+enum AmountSide {
+  AMOUNT_SIDE_UNSPECIFIED = 0;
+  // amount_minor is what the payer sends, in from_asset. The processor
+  // computes the destination amount.
+  AMOUNT_SIDE_SOURCE = 1;
+  // amount_minor is what the payee must receive, in to_asset. The processor
+  // computes the source amount.
+  AMOUNT_SIDE_DEST = 2;
 }
 
 enum TransactionType {
@@ -75,6 +96,12 @@ message ExecuteRequest {
   // Rail-specific string attributes (e.g. bank code). Never money: Struct
   // numbers are doubles.
   google.protobuf.Struct attributes = 8;
+  // Optional. The quote_id from a prior GetQuote. When set, the processor
+  // executes that exact quoted leg: currency and amount must equal the
+  // quote's source asset and source_minor, and an expired or unknown quote is
+  // REJECTED (EXECUTION_ERROR_CODE_QUOTE_EXPIRED when expired) before any
+  // rail is contacted. Empty keeps the original transaction_type routing.
+  string quote_id = 9;
 }
 
 message ExecutionError {
@@ -91,6 +118,13 @@ message ExecuteResponse {
   string provider_reference = 4;
   google.protobuf.Struct provider_metadata = 5;
   ExecutionError error = 6;
+  // What actually moved on a quote-based execution, in minor units of the
+  // quote's source and destination assets. Zero when the status is not
+  // SUCCEEDED, when the execution had no quote_id, or while PENDING. Core
+  // compares these with the locked quote amounts for FX P&L. Authoritative
+  // money: never read it from provider_metadata.
+  int64 executed_source_minor = 7;
+  int64 executed_dest_minor = 8;
 }
 
 message GetExecutionRequest {
@@ -116,4 +150,46 @@ message ExecutionRecord {
   ExecuteResponse result = 2;
   google.protobuf.Timestamp created_at = 3;
   google.protobuf.Timestamp updated_at = 4;
+}
+
+message GetQuoteRequest {
+  // A rail name (e.g. "yellowcard") or "AUTO" to let the processor choose.
+  string adapter = 1;
+  // Asset codes, e.g. "NGN", "USDT", "USD", "CNY".
+  string from_asset = 2;
+  string to_asset = 3;
+  // The fixed amount, in minor units of the asset on the side named by
+  // amount_side (from_asset for SOURCE, to_asset for DEST). Never a float.
+  int64 amount_minor = 4;
+  AmountSide amount_side = 5;
+  // Destination corridor, e.g. "NG", "CN". Required.
+  string corridor = 6;
+}
+
+message GetQuoteResponse {
+  // Issued by the processor; pass it as ExecuteRequest.quote_id.
+  string quote_id = 1;
+  // The rail that will execute this leg (the chosen one when AUTO was asked).
+  string adapter = 2;
+  // Authoritative amounts in minor units of from_asset and to_asset.
+  int64 source_minor = 3;
+  int64 dest_minor = 4;
+  // The fee included in the quote, in minor units of from_asset.
+  int64 fee_minor = 5;
+  // true: dest_minor is guaranteed until expires_at. false: indicative, and
+  // Core must apply its buffer before promising it to anyone.
+  bool firm = 6;
+  // RFC 3339 UTC instant after which Execute refuses this quote.
+  string expires_at = 7;
+  // Human-readable rate derived from the two amounts, for display only. Never
+  // authoritative, never parse it.
+  string rate_display = 8;
+  // Decimal places of from_asset and to_asset, so a raw integer is never
+  // ambiguous (NGN 2, USD 2, CNY 2, USDT/USDC 6).
+  uint32 source_decimals = 9;
+  uint32 dest_decimals = 10;
+  // The asset this rail takes in ("USDT", "USDC" or "USD"). When it is "USD"
+  // and the leg started from USDT, Core must first quote and execute a
+  // USDT->USD off-ramp leg, then re-quote this rail from USD.
+  string accepts_input = 11;
 }
