@@ -94,6 +94,9 @@ const (
 	ExecutionErrorCode_EXECUTION_ERROR_CODE_PROVIDER    ExecutionErrorCode = 2
 	ExecutionErrorCode_EXECUTION_ERROR_CODE_TIMEOUT     ExecutionErrorCode = 3
 	ExecutionErrorCode_EXECUTION_ERROR_CODE_INTERNAL    ExecutionErrorCode = 4
+	// The quote_id on an Execute has expired. Nothing was sent and money did not
+	// move: Core should request a fresh quote (or refund), not retry as is.
+	ExecutionErrorCode_EXECUTION_ERROR_CODE_QUOTE_EXPIRED ExecutionErrorCode = 5
 )
 
 // Enum value maps for ExecutionErrorCode.
@@ -104,13 +107,15 @@ var (
 		2: "EXECUTION_ERROR_CODE_PROVIDER",
 		3: "EXECUTION_ERROR_CODE_TIMEOUT",
 		4: "EXECUTION_ERROR_CODE_INTERNAL",
+		5: "EXECUTION_ERROR_CODE_QUOTE_EXPIRED",
 	}
 	ExecutionErrorCode_value = map[string]int32{
-		"EXECUTION_ERROR_CODE_UNSPECIFIED": 0,
-		"EXECUTION_ERROR_CODE_VALIDATION":  1,
-		"EXECUTION_ERROR_CODE_PROVIDER":    2,
-		"EXECUTION_ERROR_CODE_TIMEOUT":     3,
-		"EXECUTION_ERROR_CODE_INTERNAL":    4,
+		"EXECUTION_ERROR_CODE_UNSPECIFIED":   0,
+		"EXECUTION_ERROR_CODE_VALIDATION":    1,
+		"EXECUTION_ERROR_CODE_PROVIDER":      2,
+		"EXECUTION_ERROR_CODE_TIMEOUT":       3,
+		"EXECUTION_ERROR_CODE_INTERNAL":      4,
+		"EXECUTION_ERROR_CODE_QUOTE_EXPIRED": 5,
 	}
 )
 
@@ -139,6 +144,60 @@ func (x ExecutionErrorCode) Number() protoreflect.EnumNumber {
 // Deprecated: Use ExecutionErrorCode.Descriptor instead.
 func (ExecutionErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{1}
+}
+
+// AmountSide says which side of a quote GetQuoteRequest.amount_minor fixes.
+type AmountSide int32
+
+const (
+	AmountSide_AMOUNT_SIDE_UNSPECIFIED AmountSide = 0
+	// amount_minor is what the payer sends, in from_asset. The processor
+	// computes the destination amount.
+	AmountSide_AMOUNT_SIDE_SOURCE AmountSide = 1
+	// amount_minor is what the payee must receive, in to_asset. The processor
+	// computes the source amount.
+	AmountSide_AMOUNT_SIDE_DEST AmountSide = 2
+)
+
+// Enum value maps for AmountSide.
+var (
+	AmountSide_name = map[int32]string{
+		0: "AMOUNT_SIDE_UNSPECIFIED",
+		1: "AMOUNT_SIDE_SOURCE",
+		2: "AMOUNT_SIDE_DEST",
+	}
+	AmountSide_value = map[string]int32{
+		"AMOUNT_SIDE_UNSPECIFIED": 0,
+		"AMOUNT_SIDE_SOURCE":      1,
+		"AMOUNT_SIDE_DEST":        2,
+	}
+)
+
+func (x AmountSide) Enum() *AmountSide {
+	p := new(AmountSide)
+	*p = x
+	return p
+}
+
+func (x AmountSide) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AmountSide) Descriptor() protoreflect.EnumDescriptor {
+	return file_obiudo_execution_v1_execution_proto_enumTypes[2].Descriptor()
+}
+
+func (AmountSide) Type() protoreflect.EnumType {
+	return &file_obiudo_execution_v1_execution_proto_enumTypes[2]
+}
+
+func (x AmountSide) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AmountSide.Descriptor instead.
+func (AmountSide) EnumDescriptor() ([]byte, []int) {
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{2}
 }
 
 type TransactionType int32
@@ -207,11 +266,11 @@ func (x TransactionType) String() string {
 }
 
 func (TransactionType) Descriptor() protoreflect.EnumDescriptor {
-	return file_obiudo_execution_v1_execution_proto_enumTypes[2].Descriptor()
+	return file_obiudo_execution_v1_execution_proto_enumTypes[3].Descriptor()
 }
 
 func (TransactionType) Type() protoreflect.EnumType {
-	return &file_obiudo_execution_v1_execution_proto_enumTypes[2]
+	return &file_obiudo_execution_v1_execution_proto_enumTypes[3]
 }
 
 func (x TransactionType) Number() protoreflect.EnumNumber {
@@ -220,7 +279,7 @@ func (x TransactionType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TransactionType.Descriptor instead.
 func (TransactionType) EnumDescriptor() ([]byte, []int) {
-	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{2}
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{3}
 }
 
 type ExecuteRequest struct {
@@ -236,7 +295,13 @@ type ExecuteRequest struct {
 	DestinationAccountId string `protobuf:"bytes,7,opt,name=destination_account_id,json=destinationAccountId,proto3" json:"destination_account_id,omitempty"`
 	// Rail-specific string attributes (e.g. bank code). Never money: Struct
 	// numbers are doubles.
-	Attributes    *structpb.Struct `protobuf:"bytes,8,opt,name=attributes,proto3" json:"attributes,omitempty"`
+	Attributes *structpb.Struct `protobuf:"bytes,8,opt,name=attributes,proto3" json:"attributes,omitempty"`
+	// Optional. The quote_id from a prior GetQuote. When set, the processor
+	// executes that exact quoted leg: currency and amount must equal the
+	// quote's source asset and source_minor, and an expired or unknown quote is
+	// REJECTED (EXECUTION_ERROR_CODE_QUOTE_EXPIRED when expired) before any
+	// rail is contacted. Empty keeps the original transaction_type routing.
+	QuoteId       string `protobuf:"bytes,9,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -327,6 +392,13 @@ func (x *ExecuteRequest) GetAttributes() *structpb.Struct {
 	return nil
 }
 
+func (x *ExecuteRequest) GetQuoteId() string {
+	if x != nil {
+		return x.QuoteId
+	}
+	return ""
+}
+
 type ExecutionError struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          ExecutionErrorCode     `protobuf:"varint,1,opt,name=code,proto3,enum=obiudo.execution.v1.ExecutionErrorCode" json:"code,omitempty"`
@@ -403,8 +475,15 @@ type ExecuteResponse struct {
 	ProviderReference    string                 `protobuf:"bytes,4,opt,name=provider_reference,json=providerReference,proto3" json:"provider_reference,omitempty"`
 	ProviderMetadata     *structpb.Struct       `protobuf:"bytes,5,opt,name=provider_metadata,json=providerMetadata,proto3" json:"provider_metadata,omitempty"`
 	Error                *ExecutionError        `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	// What actually moved on a quote-based execution, in minor units of the
+	// quote's source and destination assets. Zero when the status is not
+	// SUCCEEDED, when the execution had no quote_id, or while PENDING. Core
+	// compares these with the locked quote amounts for FX P&L. Authoritative
+	// money: never read it from provider_metadata.
+	ExecutedSourceMinor int64 `protobuf:"varint,7,opt,name=executed_source_minor,json=executedSourceMinor,proto3" json:"executed_source_minor,omitempty"`
+	ExecutedDestMinor   int64 `protobuf:"varint,8,opt,name=executed_dest_minor,json=executedDestMinor,proto3" json:"executed_dest_minor,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *ExecuteResponse) Reset() {
@@ -477,6 +556,20 @@ func (x *ExecuteResponse) GetError() *ExecutionError {
 		return x.Error
 	}
 	return nil
+}
+
+func (x *ExecuteResponse) GetExecutedSourceMinor() int64 {
+	if x != nil {
+		return x.ExecutedSourceMinor
+	}
+	return 0
+}
+
+func (x *ExecuteResponse) GetExecutedDestMinor() int64 {
+	if x != nil {
+		return x.ExecutedDestMinor
+	}
+	return 0
 }
 
 type GetExecutionRequest struct {
@@ -681,11 +774,238 @@ func (x *ExecutionRecord) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type GetQuoteRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// A rail name (e.g. "yellowcard") or "AUTO" to let the processor choose.
+	Adapter string `protobuf:"bytes,1,opt,name=adapter,proto3" json:"adapter,omitempty"`
+	// Asset codes, e.g. "NGN", "USDT", "USD", "CNY".
+	FromAsset string `protobuf:"bytes,2,opt,name=from_asset,json=fromAsset,proto3" json:"from_asset,omitempty"`
+	ToAsset   string `protobuf:"bytes,3,opt,name=to_asset,json=toAsset,proto3" json:"to_asset,omitempty"`
+	// The fixed amount, in minor units of the asset on the side named by
+	// amount_side (from_asset for SOURCE, to_asset for DEST). Never a float.
+	AmountMinor int64      `protobuf:"varint,4,opt,name=amount_minor,json=amountMinor,proto3" json:"amount_minor,omitempty"`
+	AmountSide  AmountSide `protobuf:"varint,5,opt,name=amount_side,json=amountSide,proto3,enum=obiudo.execution.v1.AmountSide" json:"amount_side,omitempty"`
+	// Destination corridor, e.g. "NG", "CN". Required.
+	Corridor      string `protobuf:"bytes,6,opt,name=corridor,proto3" json:"corridor,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQuoteRequest) Reset() {
+	*x = GetQuoteRequest{}
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQuoteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQuoteRequest) ProtoMessage() {}
+
+func (x *GetQuoteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQuoteRequest.ProtoReflect.Descriptor instead.
+func (*GetQuoteRequest) Descriptor() ([]byte, []int) {
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetQuoteRequest) GetAdapter() string {
+	if x != nil {
+		return x.Adapter
+	}
+	return ""
+}
+
+func (x *GetQuoteRequest) GetFromAsset() string {
+	if x != nil {
+		return x.FromAsset
+	}
+	return ""
+}
+
+func (x *GetQuoteRequest) GetToAsset() string {
+	if x != nil {
+		return x.ToAsset
+	}
+	return ""
+}
+
+func (x *GetQuoteRequest) GetAmountMinor() int64 {
+	if x != nil {
+		return x.AmountMinor
+	}
+	return 0
+}
+
+func (x *GetQuoteRequest) GetAmountSide() AmountSide {
+	if x != nil {
+		return x.AmountSide
+	}
+	return AmountSide_AMOUNT_SIDE_UNSPECIFIED
+}
+
+func (x *GetQuoteRequest) GetCorridor() string {
+	if x != nil {
+		return x.Corridor
+	}
+	return ""
+}
+
+type GetQuoteResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Issued by the processor; pass it as ExecuteRequest.quote_id.
+	QuoteId string `protobuf:"bytes,1,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	// The rail that will execute this leg (the chosen one when AUTO was asked).
+	Adapter string `protobuf:"bytes,2,opt,name=adapter,proto3" json:"adapter,omitempty"`
+	// Authoritative amounts in minor units of from_asset and to_asset.
+	SourceMinor int64 `protobuf:"varint,3,opt,name=source_minor,json=sourceMinor,proto3" json:"source_minor,omitempty"`
+	DestMinor   int64 `protobuf:"varint,4,opt,name=dest_minor,json=destMinor,proto3" json:"dest_minor,omitempty"`
+	// The fee included in the quote, in minor units of from_asset.
+	FeeMinor int64 `protobuf:"varint,5,opt,name=fee_minor,json=feeMinor,proto3" json:"fee_minor,omitempty"`
+	// true: dest_minor is guaranteed until expires_at. false: indicative, and
+	// Core must apply its buffer before promising it to anyone.
+	Firm bool `protobuf:"varint,6,opt,name=firm,proto3" json:"firm,omitempty"`
+	// RFC 3339 UTC instant after which Execute refuses this quote.
+	ExpiresAt string `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// Human-readable rate derived from the two amounts, for display only. Never
+	// authoritative, never parse it.
+	RateDisplay string `protobuf:"bytes,8,opt,name=rate_display,json=rateDisplay,proto3" json:"rate_display,omitempty"`
+	// Decimal places of from_asset and to_asset, so a raw integer is never
+	// ambiguous (NGN 2, USD 2, CNY 2, USDT/USDC 6).
+	SourceDecimals uint32 `protobuf:"varint,9,opt,name=source_decimals,json=sourceDecimals,proto3" json:"source_decimals,omitempty"`
+	DestDecimals   uint32 `protobuf:"varint,10,opt,name=dest_decimals,json=destDecimals,proto3" json:"dest_decimals,omitempty"`
+	// The asset this rail takes in ("USDT", "USDC" or "USD"). When it is "USD"
+	// and the leg started from USDT, Core must first quote and execute a
+	// USDT->USD off-ramp leg, then re-quote this rail from USD.
+	AcceptsInput  string `protobuf:"bytes,11,opt,name=accepts_input,json=acceptsInput,proto3" json:"accepts_input,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetQuoteResponse) Reset() {
+	*x = GetQuoteResponse{}
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetQuoteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetQuoteResponse) ProtoMessage() {}
+
+func (x *GetQuoteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_obiudo_execution_v1_execution_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetQuoteResponse.ProtoReflect.Descriptor instead.
+func (*GetQuoteResponse) Descriptor() ([]byte, []int) {
+	return file_obiudo_execution_v1_execution_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetQuoteResponse) GetQuoteId() string {
+	if x != nil {
+		return x.QuoteId
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetAdapter() string {
+	if x != nil {
+		return x.Adapter
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetSourceMinor() int64 {
+	if x != nil {
+		return x.SourceMinor
+	}
+	return 0
+}
+
+func (x *GetQuoteResponse) GetDestMinor() int64 {
+	if x != nil {
+		return x.DestMinor
+	}
+	return 0
+}
+
+func (x *GetQuoteResponse) GetFeeMinor() int64 {
+	if x != nil {
+		return x.FeeMinor
+	}
+	return 0
+}
+
+func (x *GetQuoteResponse) GetFirm() bool {
+	if x != nil {
+		return x.Firm
+	}
+	return false
+}
+
+func (x *GetQuoteResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetRateDisplay() string {
+	if x != nil {
+		return x.RateDisplay
+	}
+	return ""
+}
+
+func (x *GetQuoteResponse) GetSourceDecimals() uint32 {
+	if x != nil {
+		return x.SourceDecimals
+	}
+	return 0
+}
+
+func (x *GetQuoteResponse) GetDestDecimals() uint32 {
+	if x != nil {
+		return x.DestDecimals
+	}
+	return 0
+}
+
+func (x *GetQuoteResponse) GetAcceptsInput() string {
+	if x != nil {
+		return x.AcceptsInput
+	}
+	return ""
+}
+
 var File_obiudo_execution_v1_execution_proto protoreflect.FileDescriptor
 
 const file_obiudo_execution_v1_execution_proto_rawDesc = "" +
 	"\n" +
-	"#obiudo/execution/v1/execution.proto\x12\x13obiudo.execution.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf6\x02\n" +
+	"#obiudo/execution/v1/execution.proto\x12\x13obiudo.execution.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x91\x03\n" +
 	"\x0eExecuteRequest\x12\x1b\n" +
 	"\tintent_id\x18\x01 \x01(\tR\bintentId\x12'\n" +
 	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\x12O\n" +
@@ -696,19 +1016,22 @@ const file_obiudo_execution_v1_execution_proto_rawDesc = "" +
 	"\x16destination_account_id\x18\a \x01(\tR\x14destinationAccountId\x127\n" +
 	"\n" +
 	"attributes\x18\b \x01(\v2\x17.google.protobuf.StructR\n" +
-	"attributes\"\xbf\x01\n" +
+	"attributes\x12\x19\n" +
+	"\bquote_id\x18\t \x01(\tR\aquoteId\"\xbf\x01\n" +
 	"\x0eExecutionError\x12;\n" +
 	"\x04code\x18\x01 \x01(\x0e2'.obiudo.execution.v1.ExecutionErrorCodeR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12#\n" +
 	"\rprovider_code\x18\x03 \x01(\tR\fproviderCode\x121\n" +
-	"\adetails\x18\x04 \x01(\v2\x17.google.protobuf.StructR\adetails\"\xd1\x02\n" +
+	"\adetails\x18\x04 \x01(\v2\x17.google.protobuf.StructR\adetails\"\xb5\x03\n" +
 	"\x0fExecuteResponse\x12<\n" +
 	"\x06status\x18\x01 \x01(\x0e2$.obiudo.execution.v1.ExecutionStatusR\x06status\x124\n" +
 	"\x16processor_execution_id\x18\x02 \x01(\tR\x14processorExecutionId\x12\x1a\n" +
 	"\bprovider\x18\x03 \x01(\tR\bprovider\x12-\n" +
 	"\x12provider_reference\x18\x04 \x01(\tR\x11providerReference\x12D\n" +
 	"\x11provider_metadata\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x10providerMetadata\x129\n" +
-	"\x05error\x18\x06 \x01(\v2#.obiudo.execution.v1.ExecutionErrorR\x05error\"i\n" +
+	"\x05error\x18\x06 \x01(\v2#.obiudo.execution.v1.ExecutionErrorR\x05error\x122\n" +
+	"\x15executed_source_minor\x18\a \x01(\x03R\x13executedSourceMinor\x12.\n" +
+	"\x13executed_dest_minor\x18\b \x01(\x03R\x11executedDestMinor\"i\n" +
 	"\x13GetExecutionRequest\x12\x1d\n" +
 	"\tintent_id\x18\x01 \x01(\tH\x00R\bintentId\x12)\n" +
 	"\x0fidempotency_key\x18\x02 \x01(\tH\x00R\x0eidempotencyKeyB\b\n" +
@@ -723,19 +1046,49 @@ const file_obiudo_execution_v1_execution_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt*\xad\x01\n" +
+	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xe6\x01\n" +
+	"\x0fGetQuoteRequest\x12\x18\n" +
+	"\aadapter\x18\x01 \x01(\tR\aadapter\x12\x1d\n" +
+	"\n" +
+	"from_asset\x18\x02 \x01(\tR\tfromAsset\x12\x19\n" +
+	"\bto_asset\x18\x03 \x01(\tR\atoAsset\x12!\n" +
+	"\famount_minor\x18\x04 \x01(\x03R\vamountMinor\x12@\n" +
+	"\vamount_side\x18\x05 \x01(\x0e2\x1f.obiudo.execution.v1.AmountSideR\n" +
+	"amountSide\x12\x1a\n" +
+	"\bcorridor\x18\x06 \x01(\tR\bcorridor\"\xef\x02\n" +
+	"\x10GetQuoteResponse\x12\x19\n" +
+	"\bquote_id\x18\x01 \x01(\tR\aquoteId\x12\x18\n" +
+	"\aadapter\x18\x02 \x01(\tR\aadapter\x12!\n" +
+	"\fsource_minor\x18\x03 \x01(\x03R\vsourceMinor\x12\x1d\n" +
+	"\n" +
+	"dest_minor\x18\x04 \x01(\x03R\tdestMinor\x12\x1b\n" +
+	"\tfee_minor\x18\x05 \x01(\x03R\bfeeMinor\x12\x12\n" +
+	"\x04firm\x18\x06 \x01(\bR\x04firm\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\tR\texpiresAt\x12!\n" +
+	"\frate_display\x18\b \x01(\tR\vrateDisplay\x12'\n" +
+	"\x0fsource_decimals\x18\t \x01(\rR\x0esourceDecimals\x12#\n" +
+	"\rdest_decimals\x18\n" +
+	" \x01(\rR\fdestDecimals\x12#\n" +
+	"\raccepts_input\x18\v \x01(\tR\facceptsInput*\xad\x01\n" +
 	"\x0fExecutionStatus\x12 \n" +
 	"\x1cEXECUTION_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aEXECUTION_STATUS_SUCCEEDED\x10\x01\x12\x1b\n" +
 	"\x17EXECUTION_STATUS_FAILED\x10\x02\x12\x1d\n" +
 	"\x19EXECUTION_STATUS_REJECTED\x10\x03\x12\x1c\n" +
-	"\x18EXECUTION_STATUS_PENDING\x10\x04*\xc7\x01\n" +
+	"\x18EXECUTION_STATUS_PENDING\x10\x04*\xef\x01\n" +
 	"\x12ExecutionErrorCode\x12$\n" +
 	" EXECUTION_ERROR_CODE_UNSPECIFIED\x10\x00\x12#\n" +
 	"\x1fEXECUTION_ERROR_CODE_VALIDATION\x10\x01\x12!\n" +
 	"\x1dEXECUTION_ERROR_CODE_PROVIDER\x10\x02\x12 \n" +
 	"\x1cEXECUTION_ERROR_CODE_TIMEOUT\x10\x03\x12!\n" +
-	"\x1dEXECUTION_ERROR_CODE_INTERNAL\x10\x04*\x84\x04\n" +
+	"\x1dEXECUTION_ERROR_CODE_INTERNAL\x10\x04\x12&\n" +
+	"\"EXECUTION_ERROR_CODE_QUOTE_EXPIRED\x10\x05*W\n" +
+	"\n" +
+	"AmountSide\x12\x1b\n" +
+	"\x17AMOUNT_SIDE_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12AMOUNT_SIDE_SOURCE\x10\x01\x12\x14\n" +
+	"\x10AMOUNT_SIDE_DEST\x10\x02*\x84\x04\n" +
 	"\x0fTransactionType\x12 \n" +
 	"\x1cTRANSACTION_TYPE_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cTRANSACTION_TYPE_CARD_CHARGE\x10\x01\x12 \n" +
@@ -751,10 +1104,11 @@ const file_obiudo_execution_v1_execution_proto_rawDesc = "" +
 	"\x12\x1f\n" +
 	"\x1bTRANSACTION_TYPE_FEE_REFUND\x10\v\x12\x1f\n" +
 	"\x1bTRANSACTION_TYPE_CHARGEBACK\x10\f\x12'\n" +
-	"#TRANSACTION_TYPE_DISPUTE_ADJUSTMENT\x10\r2\xcd\x01\n" +
+	"#TRANSACTION_TYPE_DISPUTE_ADJUSTMENT\x10\r2\xa6\x02\n" +
 	"\x10ExecutionService\x12T\n" +
 	"\aExecute\x12#.obiudo.execution.v1.ExecuteRequest\x1a$.obiudo.execution.v1.ExecuteResponse\x12c\n" +
-	"\fGetExecution\x12(.obiudo.execution.v1.GetExecutionRequest\x1a).obiudo.execution.v1.GetExecutionResponseBKZIgithub.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1;executionv1b\x06proto3"
+	"\fGetExecution\x12(.obiudo.execution.v1.GetExecutionRequest\x1a).obiudo.execution.v1.GetExecutionResponse\x12W\n" +
+	"\bGetQuote\x12$.obiudo.execution.v1.GetQuoteRequest\x1a%.obiudo.execution.v1.GetQuoteResponseBKZIgithub.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1;executionv1b\x06proto3"
 
 var (
 	file_obiudo_execution_v1_execution_proto_rawDescOnce sync.Once
@@ -768,42 +1122,48 @@ func file_obiudo_execution_v1_execution_proto_rawDescGZIP() []byte {
 	return file_obiudo_execution_v1_execution_proto_rawDescData
 }
 
-var file_obiudo_execution_v1_execution_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_obiudo_execution_v1_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_obiudo_execution_v1_execution_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_obiudo_execution_v1_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_obiudo_execution_v1_execution_proto_goTypes = []any{
 	(ExecutionStatus)(0),          // 0: obiudo.execution.v1.ExecutionStatus
 	(ExecutionErrorCode)(0),       // 1: obiudo.execution.v1.ExecutionErrorCode
-	(TransactionType)(0),          // 2: obiudo.execution.v1.TransactionType
-	(*ExecuteRequest)(nil),        // 3: obiudo.execution.v1.ExecuteRequest
-	(*ExecutionError)(nil),        // 4: obiudo.execution.v1.ExecutionError
-	(*ExecuteResponse)(nil),       // 5: obiudo.execution.v1.ExecuteResponse
-	(*GetExecutionRequest)(nil),   // 6: obiudo.execution.v1.GetExecutionRequest
-	(*GetExecutionResponse)(nil),  // 7: obiudo.execution.v1.GetExecutionResponse
-	(*ExecutionRecord)(nil),       // 8: obiudo.execution.v1.ExecutionRecord
-	(*structpb.Struct)(nil),       // 9: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(AmountSide)(0),               // 2: obiudo.execution.v1.AmountSide
+	(TransactionType)(0),          // 3: obiudo.execution.v1.TransactionType
+	(*ExecuteRequest)(nil),        // 4: obiudo.execution.v1.ExecuteRequest
+	(*ExecutionError)(nil),        // 5: obiudo.execution.v1.ExecutionError
+	(*ExecuteResponse)(nil),       // 6: obiudo.execution.v1.ExecuteResponse
+	(*GetExecutionRequest)(nil),   // 7: obiudo.execution.v1.GetExecutionRequest
+	(*GetExecutionResponse)(nil),  // 8: obiudo.execution.v1.GetExecutionResponse
+	(*ExecutionRecord)(nil),       // 9: obiudo.execution.v1.ExecutionRecord
+	(*GetQuoteRequest)(nil),       // 10: obiudo.execution.v1.GetQuoteRequest
+	(*GetQuoteResponse)(nil),      // 11: obiudo.execution.v1.GetQuoteResponse
+	(*structpb.Struct)(nil),       // 12: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
 }
 var file_obiudo_execution_v1_execution_proto_depIdxs = []int32{
-	2,  // 0: obiudo.execution.v1.ExecuteRequest.transaction_type:type_name -> obiudo.execution.v1.TransactionType
-	9,  // 1: obiudo.execution.v1.ExecuteRequest.attributes:type_name -> google.protobuf.Struct
+	3,  // 0: obiudo.execution.v1.ExecuteRequest.transaction_type:type_name -> obiudo.execution.v1.TransactionType
+	12, // 1: obiudo.execution.v1.ExecuteRequest.attributes:type_name -> google.protobuf.Struct
 	1,  // 2: obiudo.execution.v1.ExecutionError.code:type_name -> obiudo.execution.v1.ExecutionErrorCode
-	9,  // 3: obiudo.execution.v1.ExecutionError.details:type_name -> google.protobuf.Struct
+	12, // 3: obiudo.execution.v1.ExecutionError.details:type_name -> google.protobuf.Struct
 	0,  // 4: obiudo.execution.v1.ExecuteResponse.status:type_name -> obiudo.execution.v1.ExecutionStatus
-	9,  // 5: obiudo.execution.v1.ExecuteResponse.provider_metadata:type_name -> google.protobuf.Struct
-	4,  // 6: obiudo.execution.v1.ExecuteResponse.error:type_name -> obiudo.execution.v1.ExecutionError
-	8,  // 7: obiudo.execution.v1.GetExecutionResponse.executions:type_name -> obiudo.execution.v1.ExecutionRecord
-	5,  // 8: obiudo.execution.v1.ExecutionRecord.result:type_name -> obiudo.execution.v1.ExecuteResponse
-	10, // 9: obiudo.execution.v1.ExecutionRecord.created_at:type_name -> google.protobuf.Timestamp
-	10, // 10: obiudo.execution.v1.ExecutionRecord.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 11: obiudo.execution.v1.ExecutionService.Execute:input_type -> obiudo.execution.v1.ExecuteRequest
-	6,  // 12: obiudo.execution.v1.ExecutionService.GetExecution:input_type -> obiudo.execution.v1.GetExecutionRequest
-	5,  // 13: obiudo.execution.v1.ExecutionService.Execute:output_type -> obiudo.execution.v1.ExecuteResponse
-	7,  // 14: obiudo.execution.v1.ExecutionService.GetExecution:output_type -> obiudo.execution.v1.GetExecutionResponse
-	13, // [13:15] is the sub-list for method output_type
-	11, // [11:13] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	12, // 5: obiudo.execution.v1.ExecuteResponse.provider_metadata:type_name -> google.protobuf.Struct
+	5,  // 6: obiudo.execution.v1.ExecuteResponse.error:type_name -> obiudo.execution.v1.ExecutionError
+	9,  // 7: obiudo.execution.v1.GetExecutionResponse.executions:type_name -> obiudo.execution.v1.ExecutionRecord
+	6,  // 8: obiudo.execution.v1.ExecutionRecord.result:type_name -> obiudo.execution.v1.ExecuteResponse
+	13, // 9: obiudo.execution.v1.ExecutionRecord.created_at:type_name -> google.protobuf.Timestamp
+	13, // 10: obiudo.execution.v1.ExecutionRecord.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 11: obiudo.execution.v1.GetQuoteRequest.amount_side:type_name -> obiudo.execution.v1.AmountSide
+	4,  // 12: obiudo.execution.v1.ExecutionService.Execute:input_type -> obiudo.execution.v1.ExecuteRequest
+	7,  // 13: obiudo.execution.v1.ExecutionService.GetExecution:input_type -> obiudo.execution.v1.GetExecutionRequest
+	10, // 14: obiudo.execution.v1.ExecutionService.GetQuote:input_type -> obiudo.execution.v1.GetQuoteRequest
+	6,  // 15: obiudo.execution.v1.ExecutionService.Execute:output_type -> obiudo.execution.v1.ExecuteResponse
+	8,  // 16: obiudo.execution.v1.ExecutionService.GetExecution:output_type -> obiudo.execution.v1.GetExecutionResponse
+	11, // 17: obiudo.execution.v1.ExecutionService.GetQuote:output_type -> obiudo.execution.v1.GetQuoteResponse
+	15, // [15:18] is the sub-list for method output_type
+	12, // [12:15] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_obiudo_execution_v1_execution_proto_init() }
@@ -820,8 +1180,8 @@ func file_obiudo_execution_v1_execution_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_obiudo_execution_v1_execution_proto_rawDesc), len(file_obiudo_execution_v1_execution_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   6,
+			NumEnums:      4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

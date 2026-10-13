@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	ExecutionService_Execute_FullMethodName      = "/obiudo.execution.v1.ExecutionService/Execute"
 	ExecutionService_GetExecution_FullMethodName = "/obiudo.execution.v1.ExecutionService/GetExecution"
+	ExecutionService_GetQuote_FullMethodName     = "/obiudo.execution.v1.ExecutionService/GetQuote"
 )
 
 // ExecutionServiceClient is the client API for ExecutionService service.
@@ -38,6 +39,12 @@ type ExecutionServiceClient interface {
 	// GetExecution returns what the processor knows about past executions, so
 	// Core can reconcile intents whose outcome it did not receive.
 	GetExecution(ctx context.Context, in *GetExecutionRequest, opts ...grpc.CallOption) (*GetExecutionResponse, error)
+	// GetQuote prices ONE leg on ONE rail (or on the rail the processor picks
+	// when adapter is "AUTO"). It moves no money and is safe to retry; every
+	// call issues a new quote_id. Core composes the legs it receives into its
+	// own composite quote: the composite contract lives in Core, never here.
+	// The returned quote_id is what ExecuteRequest.quote_id refers to.
+	GetQuote(ctx context.Context, in *GetQuoteRequest, opts ...grpc.CallOption) (*GetQuoteResponse, error)
 }
 
 type executionServiceClient struct {
@@ -68,6 +75,16 @@ func (c *executionServiceClient) GetExecution(ctx context.Context, in *GetExecut
 	return out, nil
 }
 
+func (c *executionServiceClient) GetQuote(ctx context.Context, in *GetQuoteRequest, opts ...grpc.CallOption) (*GetQuoteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetQuoteResponse)
+	err := c.cc.Invoke(ctx, ExecutionService_GetQuote_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionServiceServer is the server API for ExecutionService service.
 // All implementations must embed UnimplementedExecutionServiceServer
 // for forward compatibility.
@@ -83,6 +100,12 @@ type ExecutionServiceServer interface {
 	// GetExecution returns what the processor knows about past executions, so
 	// Core can reconcile intents whose outcome it did not receive.
 	GetExecution(context.Context, *GetExecutionRequest) (*GetExecutionResponse, error)
+	// GetQuote prices ONE leg on ONE rail (or on the rail the processor picks
+	// when adapter is "AUTO"). It moves no money and is safe to retry; every
+	// call issues a new quote_id. Core composes the legs it receives into its
+	// own composite quote: the composite contract lives in Core, never here.
+	// The returned quote_id is what ExecuteRequest.quote_id refers to.
+	GetQuote(context.Context, *GetQuoteRequest) (*GetQuoteResponse, error)
 	mustEmbedUnimplementedExecutionServiceServer()
 }
 
@@ -98,6 +121,9 @@ func (UnimplementedExecutionServiceServer) Execute(context.Context, *ExecuteRequ
 }
 func (UnimplementedExecutionServiceServer) GetExecution(context.Context, *GetExecutionRequest) (*GetExecutionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetExecution not implemented")
+}
+func (UnimplementedExecutionServiceServer) GetQuote(context.Context, *GetQuoteRequest) (*GetQuoteResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetQuote not implemented")
 }
 func (UnimplementedExecutionServiceServer) mustEmbedUnimplementedExecutionServiceServer() {}
 func (UnimplementedExecutionServiceServer) testEmbeddedByValue()                          {}
@@ -156,6 +182,24 @@ func _ExecutionService_GetExecution_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionService_GetQuote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQuoteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionServiceServer).GetQuote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionService_GetQuote_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionServiceServer).GetQuote(ctx, req.(*GetQuoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionService_ServiceDesc is the grpc.ServiceDesc for ExecutionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +214,10 @@ var ExecutionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetExecution",
 			Handler:    _ExecutionService_GetExecution_Handler,
+		},
+		{
+			MethodName: "GetQuote",
+			Handler:    _ExecutionService_GetQuote_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
