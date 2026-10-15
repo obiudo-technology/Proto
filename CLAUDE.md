@@ -70,7 +70,7 @@ The repo has exactly two long-lived branches: **`main`** (released) and **`dev`*
 - Claude commits locally only: the owner pushes, opens and merges PRs, and creates tags. Give the owner the exact commands.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`). **No `Co-Authored-By` trailer.**
 
-**Proto-specific:** the `main` ruleset (`.github/rulesets/main-branch.json`) still allows **squash only** and requires linear history, which cannot take a `dev` → `main` merge commit. Until the owner changes that ruleset on GitHub, a squashed `dev` → `main` must be followed by resetting `dev` to `main`.
+**Proto-specific (enforced on GitHub):** the `main` ruleset (`.github/rulesets/main-branch.json`) accepts **merge commits only** and requires the `source-is-dev` check (`.github/workflows/main-source.yml`), so only this repo's `dev` can be merged into `main`. The `dev` ruleset (`dev-branch.json`) blocks direct pushes, force-pushes and deletion of `dev` and requires `buf` and `generated-code`. After a `dev` → `main` merge, the next `dev` → `main` PR will show "out of date": use **Update branch** (the rulesets require an up-to-date head). Editing these files does not change GitHub: the owner re-imports them (Settings → Rules → Rulesets).
 
 ---
 
