@@ -26,6 +26,11 @@ This repo is the **gRPC contract** between `obiudo-core` (NestJS, the book of re
 
 ## Hard rules (never break these)
 
+### Writing style (hard rule)
+- All prose we write must read like a person wrote it: documentation, code comments, log and error messages, commit messages, PR descriptions, the engineering docs, the learning log, and any other text. Use plain, clear, relatable English, with the words and sentence patterns a person would naturally use.
+- **Never use the em dash** (the long dash, Unicode U+2014) anywhere. Where you would reach for one, use a comma, a pair of parentheses, the word "and", a colon or a full stop, or rewrite the sentence. For a range, write "to" (e.g. "M0 to M4") or a plain hyphen.
+- This applies to everything generated in this repo, not just source files.
+
 ### Contract changes are additive only
 - **Never** renumber, reuse, rename or remove a field, enum value, message, RPC or service, and never change a field's type or `oneof` membership.
 - To retire something: mark it `[deprecated = true]`, and when it's finally removed, `reserved` both its number and its name.
