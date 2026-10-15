@@ -21,4 +21,4 @@ make shell      # shell inside the toolchain container
 
 - Changes are **additive only**. Never renumber, rename or remove a field, enum value or RPC. Deprecate instead. `buf breaking` enforces this in CI.
 - Every release is a semver tag (`vX.Y.Z`) cut from `main`. Consumers pin tags, so a tag is never moved or deleted.
-- `main` is protected: PR only, owner review, CI green, squash merge.
+- Branches: `main` (released) and `dev` (integration) only. Work branches come from `dev` and are PR'd into `dev`; only `dev` is PR'd into `main`. `main` is protected: PR only, owner review, CI green.
