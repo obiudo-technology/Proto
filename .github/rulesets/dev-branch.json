@@ -35,7 +35,9 @@
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
           { "context": "buf", "integration_id": 15368 },
-          { "context": "generated-code", "integration_id": 15368 }
+          { "context": "generated-code", "integration_id": 15368 },
+          { "context": "commit-messages", "integration_id": 15368 },
+          { "context": "secret-scan", "integration_id": 15368 }
         ]
       }
     }

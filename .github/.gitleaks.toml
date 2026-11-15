@@ -1,0 +1,15 @@
+# gitleaks config for the secret-scan job (.github/workflows/pr-checks.yml).
+# Uses gitleaks' full default rule set and allowlists only .env.example,
+# which holds placeholders and documentation, never real secrets.
+# Kept identical in obiudo-core, obiudo-processor and obiudo-proto.
+
+title = "Obiudo gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = ".env.example holds placeholders, not secrets"
+paths = [
+  '''\.env\.example$''',
+]
