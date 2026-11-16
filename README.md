@@ -2,8 +2,10 @@
 
 The gRPC contract between `obiudo-core` (NestJS) and `obiudo-processor` (Go).
 
-- **Source:** `proto/obiudo/execution/v1/execution.proto`
-- **Go:** generated into `gen/go/` and committed. Import `github.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1` (package `executionv1`).
+- **Sources:**
+  - `proto/obiudo/execution/v1/execution.proto`: moving money on payment rails (`ExecutionService`: `Execute`, `GetExecution`, `GetQuote`).
+  - `proto/obiudo/collection/v1/collection.proto` (since `v0.5.0`): NGN collection. `CollectionService` (hosted by the processor: `ProvisionAccount`, `ListDeposits`) and `CollectionEventsService` (hosted by Core: `RecordDeposit`).
+- **Go:** generated into `gen/go/` and committed. Import `github.com/obiudo-technology/Proto/gen/go/obiudo/execution/v1` (package `executionv1`) and `github.com/obiudo-technology/Proto/gen/go/obiudo/collection/v1` (package `collectionv1`).
 - **TypeScript (Core):** loads the `.proto` at runtime. Install with `"obiudo-proto": "github:obiudo-technology/Proto#<tag>"`.
 
 ## Working on the contract

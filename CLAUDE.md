@@ -9,7 +9,7 @@ This repo is the **gRPC contract** between `obiudo-core` (NestJS, the book of re
 ## Read first
 
 - `README.md`: layout, `make` targets, release rules.
-- `proto/obiudo/execution/v1/execution.proto`: the contract itself.
+- `proto/obiudo/execution/v1/execution.proto` and `proto/obiudo/collection/v1/collection.proto`: the contract itself.
 - How the consumers use it: the processor's `docs/ObiudoProcessorEngineering.md` §3 (`../processor`), and Core's `src/app/processor/` (`../core`).
 
 ---
