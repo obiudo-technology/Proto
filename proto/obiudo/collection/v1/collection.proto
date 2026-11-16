@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package obiudo.collection.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/obiudo-technology/Proto/gen/go/obiudo/collection/v1;collectionv1";
+
+// CollectionService is hosted by obiudo-processor and called by obiudo-core.
+// It opens NGN collection accounts for traders with the processor's active
+// collection provider (Bitnob at launch), and lists the deposits an account
+// received so Core can reconcile. The processor keeps no deposit records:
+// Core is the book of record.
+service CollectionService {
+  // ProvisionAccount opens the trader's collection account, or returns the
+  // one already opened under the same account_ref. Safe to retry with the
+  // same account_ref.
+  //
+  // Errors (gRPC status):
+  //   INVALID_ARGUMENT: a field is missing or malformed. The message names
+  //     the fields, never their values.
+  //   FAILED_PRECONDITION: the provider refused the trader's details (for
+  //     example a BVN that does not exist, or a name or date of birth that
+  //     does not match it). The trader must correct them.
+  //   UNAVAILABLE: the outcome is unknown or nothing was sent. Retry later
+  //     with the same account_ref.
+  //   UNIMPLEMENTED: no collection provider is configured.
+  rpc ProvisionAccount(ProvisionAccountRequest) returns (ProvisionAccountResponse);
+
+  // ListDeposits returns one page of completed deposits on a collection
+  // account within a time window, in the same shape RecordDeposit reports
+  // them. It moves no money and is safe to retry. Core passes each deposit
+  // through the same idempotent recording path as a pushed one.
+  rpc ListDeposits(ListDepositsRequest) returns (ListDepositsResponse);
+}
+
+// CollectionEventsService is hosted by obiudo-core and called by
+// obiudo-processor. The processor calls it once a provider's deposit webhook
+// has been verified (signature first) and checked.
+service CollectionEventsService {
+  // RecordDeposit asks Core to record one verified deposit and credit the
+  // trader's wallet. Core must make it idempotent on (provider,
+  // provider_transaction_id): the same deposit can arrive more than once,
+  // from a webhook redelivery or from a ListDeposits reconciliation.
+  //
+  // Any OK answer is an acknowledgement, including DUPLICATE and
+  // HELD_FOR_REVIEW. Any error status means Core did not record it, and the
+  // processor makes the provider send it again.
+  rpc RecordDeposit(RecordDepositRequest) returns (RecordDepositResponse);
+}
+
+// Identity is the trader's personal data a provider needs to open an
+// account. It is used for one ProvisionAccount call only: neither service
+// stores or logs it. Which fields are required depends on the provider
+// (Bitnob needs all of them).
+message Identity {
+  string first_name = 1;
+  string last_name = 2;
+  // A real mailbox; providers refuse placeholder domains such as example.com.
+  string email = 3;
+  // E.164 with Nigeria's dial code, e.g. "+2348012345678".
+  string phone = 4;
+  // YYYY-MM-DD. The trader must be at least 18.
+  string date_of_birth = 5;
+  // The 11-digit Bank Verification Number.
+  string bvn = 6;
+}
+
+message ProvisionAccountRequest {
+  // Core's id for the trader's NGN wallet. Sent to the provider as its
+  // unique reference, so the same account_ref always returns the same
+  // account. 1 to 100 visible ASCII characters.
+  string account_ref = 1;
+  // ISO-4217 code of the account to open. Only "NGN" today.
+  string currency = 2;
+  Identity identity = 3;
+}
+
+message ProvisionAccountResponse {
+  // The provider that opened the account, e.g. "bitnob". Core refuses an
+  // answer from a provider other than the one it is configured for.
+  string provider = 1;
+  // The provider's id for the account. Deposits name the account by it.
+  string provider_account_id = 2;
+  // The provider's id for the trader's customer record.
+  string provider_customer_id = 3;
+  // The bank account number the trader pays into. Core stores it encrypted
+  // and never logs it.
+  string account_number = 4;
+  // The account name payers' banks show.
+  string account_name = 5;
+  string bank_name = 6;
+  // ISO-4217 code, e.g. "NGN".
+  string currency = 7;
+}
+
+// Deposit is one verified inbound payment into a collection account.
+message Deposit {
+  // The provider that received the money, e.g. "bitnob".
+  string provider = 1;
+  // The provider's id for this credit. Core dedupes on (provider,
+  // provider_transaction_id).
+  string provider_transaction_id = 2;
+  // The provider's webhook event id. Empty when the deposit came from
+  // ListDeposits.
+  string provider_event_id = 3;
+  // The collection account the money arrived in
+  // (ProvisionAccountResponse.provider_account_id).
+  string provider_account_id = 4;
+  // Core's account_ref when the provider echoes it; may be empty, in which
+  // case Core matches on provider_account_id.
+  string account_ref = 5;
+  // ISO-4217 code, e.g. "NGN".
+  string currency = 6;
+  // Gross amount the payer sent, in minor units (kobo). Always > 0. Credited
+  // to the trader in full. Never a float.
+  int64 amount_minor = 7;
+  // What the provider kept, in minor units of currency. 0 when the provider
+  // charges no collection fee (Bitnob). Never more than amount_minor. Core
+  // books it as the platform's cost, never the trader's.
+  int64 fee_minor = 8;
+  // When the provider says the money arrived. Unset when it did not say.
+  google.protobuf.Timestamp occurred_at = 9;
+  // The bank's reference for the transfer, for support. Not used for
+  // dedupe.
+  string payment_reference = 10;
+}
+
+message RecordDepositRequest {
+  Deposit deposit = 1;
+}
+
+// RecordDepositResult is what Core did with a deposit. Every value except
+// UNSPECIFIED is an acknowledgement.
+enum RecordDepositResult {
+  RECORD_DEPOSIT_RESULT_UNSPECIFIED = 0;
+  // Core recorded the deposit and credited the trader's wallet.
+  RECORD_DEPOSIT_RESULT_RECORDED = 1;
+  // Core had already recorded this deposit. Nothing new was written.
+  RECORD_DEPOSIT_RESULT_DUPLICATE = 2;
+  // The money is real but Core could not credit it (an unknown account, an
+  // inactive trader). It is kept for a person to resolve. The provider must
+  // not send it again.
+  RECORD_DEPOSIT_RESULT_HELD_FOR_REVIEW = 3;
+}
+
+message RecordDepositResponse {
+  RecordDepositResult result = 1;
+  // Core's id for the recorded deposit. Empty for DUPLICATE.
+  string collection_id = 2;
+}
+
+message ListDepositsRequest {
+  // The account to list (ProvisionAccountResponse.provider_account_id).
+  string provider_account_id = 1;
+  // The window, from inclusive to exclusive. Both required, from before to.
+  google.protobuf.Timestamp from = 2;
+  google.protobuf.Timestamp to = 3;
+  // Opaque value from the previous page's next_cursor; empty for the first
+  // page.
+  string cursor = 4;
+  // The provider that opened the account. Empty means the processor's
+  // active provider. Set it for accounts opened with an earlier provider.
+  string provider = 5;
+}
+
+message ListDepositsResponse {
+  // Completed deposits in the window on this page. A page can be empty while
+  // next_cursor is set: keep paging until next_cursor is empty.
+  repeated Deposit deposits = 1;
+  // Empty on the last page.
+  string next_cursor = 2;
+}
