@@ -1,0 +1,37 @@
+# Only `dev` may be merged into `main` (CLAUDE.md, "Branching: main + dev
+# only"). The `source-is-dev` job is a required status check on main
+# (.github/rulesets/main-branch.json), so a pull request into main from any
+# other branch, or from a fork's branch that happens to be called `dev`,
+# cannot be merged.
+#
+# Hardening: read-only token, no checkout (nothing from the PR is executed),
+# no pull_request_target, and the branch names reach the shell through env
+# variables, never through ${{ }} interpolation inside the script.
+name: main-source
+
+on:
+  pull_request:
+    branches: [main]
+    # edited: re-check when someone retargets a PR's base to main.
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  source-is-dev:
+    name: source-is-dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require the head branch to be this repository's dev
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          THIS_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" != "dev" ] || [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::Only this repository's dev branch can be merged into main (got ${HEAD_REPO}:${HEAD_REF}). Open the PR into dev instead."
+            exit 1
+          fi
+          echo "Head is ${THIS_REPO}:dev."

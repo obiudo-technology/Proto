@@ -9,22 +9,27 @@ This repo is the **gRPC contract** between `obiudo-core` (NestJS, the book of re
 ## Read first
 
 - `README.md`: layout, `make` targets, release rules.
-- `proto/obiudo/execution/v1/execution.proto`: the contract itself.
+- `proto/obiudo/execution/v1/execution.proto` and `proto/obiudo/collection/v1/collection.proto`: the contract itself.
 - How the consumers use it: the processor's `docs/ObiudoProcessorEngineering.md` §3 (`../processor`), and Core's `src/app/processor/` (`../core`).
 
 ---
 
 ## How to work here
 
-1. Branch from `main`. `main` is protected: PR only, owner review, required CI, squash merge. **Never push to `main`.**
+1. Branch from **`dev`** (see *Branching* below). `main` is protected: PR only, owner review, required CI. **Never push to `main` or `dev`.**
 2. Edit the `.proto`, then `make format` → `make generate` → `make check`. Every command runs in the Docker toolchain, so only Docker is required.
 3. Commit the `.proto` change **and** the regenerated `gen/` (plus `go.mod`/`go.sum` if changed) **in the same commit.**
-4. Releasing is the owner's job. Never create, move, delete or push tags: give the owner the exact command (`git tag vX.Y.Z && git push origin vX.Y.Z`) to run from an up-to-date `main`.
+4. Releasing is the owner's job. Never create, move, delete or push tags: give the owner the exact command (`git tag vX.Y.Z && git push origin vX.Y.Z`) to run from an up-to-date `main`, after `dev` has been merged into it.
 5. After a release, consumers upgrade in their own repos: the processor runs `go get github.com/obiudo-technology/Proto@vX.Y.Z`, and Core changes its `package.json` `#vX.Y.Z`. If the semantics changed, update the processor engineering doc §3 in the same piece of work.
 
 ---
 
 ## Hard rules (never break these)
+
+### Writing style (hard rule)
+- All prose we write must read like a person wrote it: documentation, code comments, log and error messages, commit messages, PR descriptions, the engineering docs, the learning log, and any other text. Use plain, clear, relatable English, with the words and sentence patterns a person would naturally use.
+- **Never use the em dash** (the long dash, Unicode U+2014) anywhere. Where you would reach for one, use a comma, a pair of parentheses, the word "and", a colon or a full stop, or rewrite the sentence. For a range, write "to" (e.g. "M0 to M4") or a plain hyphen.
+- This applies to everything generated in this repo, not just source files.
 
 ### Contract changes are additive only
 - **Never** renumber, reuse, rename or remove a field, enum value, message, RPC or service, and never change a field's type or `oneof` membership.
@@ -56,9 +61,21 @@ This repo is the **gRPC contract** between `obiudo-core` (NestJS, the book of re
 - `.github/rulesets/*.json` mirror the rulesets configured on GitHub. Editing a file does **not** change GitHub: tell the owner to re-import it (Settings → Rules → Rulesets).
 - Never read or edit any `.env` file.
 
-### Git
-- Clear conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`). **No `Co-Authored-By` trailer.**
-- Never `git push` or push tags yourself: give the owner the command.
+---
+
+## Branching: `main` + `dev` only (never break this)
+
+The repo has exactly two long-lived branches: **`main`** (released) and **`dev`** (integration). Every other branch is short-lived.
+
+- **Always branch from `dev`:** `git checkout dev && git pull --ff-only && git checkout -b <type>/<short-name>` (`feat/`, `fix/`, `chore/`, `docs/`, `ci/`). Never branch from `main` or from another feature branch.
+- **Feature PRs target `dev`** (squash merge is fine there).
+- **Only `dev` is PR'd into `main`**, and always with **"Create a merge commit"**, never squash: a squash makes `dev` and `main` diverge, so the next `dev` → `main` PR re-shows old work or conflicts.
+- Never push directly to `main` or `dev`; changes arrive by pull request only. Merge a PR only when CI is green and it is up to date with its base.
+- Delete a feature branch (local and origin) once it is merged.
+- Claude commits locally only: the owner pushes, opens and merges PRs, and creates tags. Give the owner the exact commands.
+- Conventional commit messages (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`). **No `Co-Authored-By` trailer.**
+
+**Proto-specific (enforced on GitHub):** the `main` ruleset (`.github/rulesets/main-branch.json`) accepts **merge commits only** and requires the `source-is-dev` check (`.github/workflows/main-source.yml`), so only this repo's `dev` can be merged into `main`. The `dev` ruleset (`dev-branch.json`) blocks direct pushes, force-pushes and deletion of `dev` and requires `buf`, `generated-code`, `commit-messages` and `secret-scan`. The last two come from `.github/workflows/pr-checks.yml`, which runs on every PR, docs-only ones included: `commit-messages` (`.github/scripts/check-commit-messages.sh`) requires Conventional Commit subjects and refuses any AI or co-author attribution (skipped on the `dev` → `main` promotion, whose commits were checked on their way into `dev`), and `secret-scan` runs a pinned, checksum-verified gitleaks binary over the PR's commits only (`.github/.gitleaks.toml`, default rules, `.env.example` allowlisted). After a `dev` → `main` merge, the next `dev` → `main` PR will show "out of date": use **Update branch** (the rulesets require an up-to-date head). Editing these files does not change GitHub: the owner re-imports them (Settings → Rules → Rulesets).
 
 ---
 
