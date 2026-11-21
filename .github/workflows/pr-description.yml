@@ -1,0 +1,40 @@
+# Every pull request, to any branch, must describe itself with this repo's
+# .github/pull_request_template.md (.github/scripts/check-pr-description.sh):
+# every heading kept, the guidance comments removed, no AI attribution.
+#
+# GitHub pre-fills the template on every new pull request, to any branch,
+# once the template is on the default branch (main). This check makes sure
+# it stays filled in. It runs again whenever the description is edited, so
+# fixing the description turns it green without a new commit.
+#
+# Kept identical in obiudo-core, obiudo-processor and obiudo-proto.
+#
+# Hardening: read-only token, checkout pinned to a full commit SHA, no
+# pull_request_target, credentials not kept, and the description reaches the
+# shell only through an env variable, never through ${{ }} inside a script.
+name: pr-description
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-description-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  description:
+    name: description
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: The description follows the template
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: bash .github/scripts/check-pr-description.sh
