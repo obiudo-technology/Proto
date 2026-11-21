@@ -10,7 +10,7 @@
   },
   "bypass_actors": [
     {
-      "actor_id": 96774358,
+      "actor_id": 337672370,
       "actor_type": "User",
       "bypass_mode": "pull_request"
     }
@@ -37,7 +37,8 @@
           { "context": "buf", "integration_id": 15368 },
           { "context": "generated-code", "integration_id": 15368 },
           { "context": "commit-messages", "integration_id": 15368 },
-          { "context": "secret-scan", "integration_id": 15368 }
+          { "context": "secret-scan", "integration_id": 15368 },
+          { "context": "description", "integration_id": 15368 }
         ]
       }
     }

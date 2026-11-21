@@ -10,7 +10,7 @@
   },
   "bypass_actors": [
     {
-      "actor_id": 96774358,
+      "actor_id": 337672370,
       "actor_type": "User",
       "bypass_mode": "always"
     }
